@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Voice Shifters: An interactive ESL/EFL game to practice active and passive voice transformations.">
+  <title>Voice Shifters: Active & Passive Rescue</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --success: #16a34a;
+      --error: #dc2626;
+      --warning: #ca8a04;
+      --border: #e2e8f0;
+      --radius: 12px;
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --font-main: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --transition: 0.2s ease;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b1120;
+        --surface: #1e293b;
+        --text: #f8fafc;
+        --text-muted: #94a3b8;
+        --border: #334155;
+      }
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-main);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 720px;
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+
+    .timer-wrap {
+      width: 100%;
+      height: 12px;
+      background: var(--border);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+    .timer-bar {
+      height: 100%;
+      background: var(--primary);
+      width: 100%;
+      transition: width 0.1s linear, background var(--transition);
+    }
+    .timer-text {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: bold;
+      color: var(--surface);
+      text-shadow: 0 1px 2px rgb(0 0 0 / 0.5);
+    }
+
+    .screen { display: none; }
+    .screen.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .chart {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.95rem;
+    }
+    .chart th, .chart td {
+      border: 1px solid var(--border);
+      padding: 0.75rem;
+      text-align: left;
+    }
+    .chart th { background: var(--border); }
+
+    .rules-list {
+      margin: 0.5rem 0 1.5rem 1.5rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.6rem 1rem;
+      border: none;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all var(--transition);
+      background: var(--primary);
+      color: white;
+      font-size: 1rem;
+    }
+    .btn:hover:not(:disabled) { background: var(--primary-hover); transform: translateY(-1px); }
+    .btn:active:not(:disabled) { transform: translateY(0); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn.secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+    .btn.secondary:hover:not(:disabled) { background: var(--border); }
+
+    .choices { display: flex; gap: 1rem; margin-top: 1rem; }
+    .choices button { flex: 1; padding: 1rem; font-size: 1.1rem; }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-size: 1rem;
+      margin: 1rem 0;
+      background: var(--bg);
+      color: var(--text);
+      transition: border-color var(--transition);
+    }
+    input[type="text"]:focus { outline: none; border-color: var(--primary); }
+
+    .feedback {
+      margin-top: 1rem;
+      padding: 0.8rem;
+      border-radius: 8px;
+      font-weight: 500;
+      min-height: 3rem;
+      display: flex;
+      align-items: center;
+    }
+    .feedback.correct { background: #dcfce7; color: #166534; }
+    .feedback.wrong { background: #fee2e2; color: #991b1b; }
+    .feedback.info { background: #fef9c3; color: #854d0e; }
+
+    .boosts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+    .boost-btn {
+      flex: 1;
+      min-width: 70px;
+      padding: 0.5rem;
+      font-size: 0.85rem;
+      background: var(--bg);
+      color: var(--text-muted);
+      border: 2px solid var(--border);
+      position: relative;
+    }
+    .boost-btn.unlocked { color: var(--primary); border-color: var(--primary); background: #eff6ff; }
+    .boost-btn:disabled { opacity: 0.4; }
+    .boost-count {
+      position: absolute;
+      top: -8px; right: -8px;
+      background: var(--error);
+      color: white;
+      font-size: 0.7rem;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .sentence {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin: 0.5rem 0;
+      background: var(--bg);
+      padding: 1rem;
+      border-radius: 8px;
+      border-left: 4px solid var(--primary);
+    }
+    .hint-text { color: var(--text-muted); font-style: italic; margin-top: 0.5rem; font-size: 0.9rem; }
+
+    #confetti-canvas {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 100;
+    }
+
+    @media (max-width: 600px) {
+      .container { padding: 1rem; }
+      .choices { flex-direction: column; }
+      header { font-size: 0.9rem; }
+    }
+
+    /* Accessibility */
+    :focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+  </style>
+</head>
+<body>
+
+  <canvas id="confetti-canvas" aria-hidden="true"></canvas>
+
+  <main class="container" role="main">
+    <header>
+      <div>Voice Shifters <span id="level-badge">Level 1/5</span></div>
+      <div>Score: <span id="score-display">0</span> <span class="sr-only">| High Score</span> <span id="highscore-display" style="font-weight:400; color:var(--text-muted)">(Best: 0)</span></div>
+    </header>
+
+    <div class="timer-wrap" aria-label="Question Timer">
+      <div class="timer-bar" id="timer-bar"></div>
+      <div class="timer-text" id="timer-text">20s</div>
+    </div>
+
+    <!-- TUTORIAL SCREEN -->
+    <section id="screen-tutorial" class="screen active" aria-labelledby="tutorial-heading">
+      <h2 id="tutorial-heading">Welcome to Voice Shifters 🎮</h2>
+      <p>Learn to master Active and Passive voice before jumping into action!</p>
+      <table class="chart" aria-describedby="tutorial-heading">
+        <thead>
+          <tr><th>Tense</th><th>Active</th><th>Passive</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Simple Present</td><td>The chef cooks the meal.</td><td>The meal is cooked by the chef.</td></tr>
+          <tr><td>Present Cont.</td><td>The chef is cooking the meal.</td><td>The meal is being cooked by the chef.</td></tr>
+          <tr><td>Simple Past</td><td>The chef cooked the meal.</td><td>The meal was cooked by the chef.</td></tr>
+          <tr><td>Past Cont.</td><td>The chef was cooking the meal.</td><td>The meal was being cooked by the chef.</td></tr>
+          <tr><td>Present Perfect</td><td>The chef has cooked the meal.</td><td>The meal has been cooked by the chef.</td></tr>
+          <tr><td>Future (will)</td><td>The chef will cook the meal.</td><td>The meal will be cooked by the chef.</td></tr>
+        </tbody>
+      </table>
+      <ul class="rules-list">
+        <li>Object becomes Subject → verb agreement changes (plural/singular).</li>
+        <li><em>By + agent</em> is optional in passive voice.</li>
+      </ul>
+      <button id="start-btn" class="btn" aria-label="Start Game">Start Game ▶</button>
+    </section>
+
+    <!-- GAME SCREEN -->
+    <section id="screen-game" class="screen" aria-live="polite">
+      <div class="sentence" id="sentence-display" aria-label="Current Sentence"></div>
+      <p id="instruction-display" style="margin: 0.5rem 0; font-weight: 500;"></p>
+      
+      <div id="input-area">
+        <div class="choices hidden" id="choice-btns" role="group" aria-label="Voice Selection">
+          <button class="btn secondary" data-choice="Active">Active</button>
+          <button class="btn secondary" data-choice="Passive">Passive</button>
+        </div>
+        <input type="text" id="text-input" class="hidden" autocomplete="off" placeholder="Type your answer here...">
+        <button id="submit-btn" class="btn" style="width:100%; margin-top:0.5rem;">Submit Answer</button>
+      </div>
+
+      <div class="boosts" id="boosts-area" role="group" aria-label="Game Boosts">
+        <button class="btn boost-btn" data-boost="double" disabled aria-label="Double Points (Locked)"><span>2x Pts</span><span class="boost-count" hidden>0</span></button>
+        <button class="btn boost-btn" data-boost="freeze" disabled aria-label="Freeze Timer (Locked)"><span>❄️ Freeze</span><span class="boost-count" hidden>0</span></button>
+        <button class="btn boost-btn" data-boost="skip" disabled aria-label="Skip Question (Locked)"><span>⏭️ Skip</span><span class="boost-count" hidden>0</span></button>
+        <button class="btn boost-btn" data-boost="hint" disabled aria-label="Hint (Locked)"><span>💡 Hint</span><span class="boost-count" hidden>0</span></button>
+      </div>
+
+      <div class="feedback" id="feedback" role="status" aria-atomic="true"></div>
+    </section>
+
+    <!-- END SCREEN -->
+    <section id="screen-end" class="screen" aria-labelledby="end-heading">
+      <h2 id="end-heading">Game Complete! 🏆</h2>
+      <p>Final Score: <strong id="final-score" style="font-size:1.5rem;">0</strong></p>
+      <p id="end-message"></p>
+      <button id="restart-btn" class="btn" style="margin-top:1.5rem;">Play Again 🔄</button>
+    </section>
+
+    <div style="text-align:center; margin-top:2rem;">
+      <button id="reset-btn" class="btn secondary" aria-label="Reset Game Progress">Reset Game</button>
+    </div>
+  </main>
+
+<script>
+'use strict';
+
+/**
+ * Voice Shifters: Active & Passive Rescue
+ * Single-file ESL game engine
+ */
+(function() {
+  // DOM Cache
+  const els = {
+    screens: {
+      tutorial: document.getElementById('screen-tutorial'),
+      game: document.getElementById('screen-game'),
+      end: document.getElementById('screen-end')
+    },
+    score: document.getElementById('score-display'),
+    highScore: document.getElementById('highscore-display'),
+    levelBadge: document.getElementById('level-badge'),
+    timerBar: document.getElementById('timer-bar'),
+    timerText: document.getElementById('timer-text'),
+    sentence: document.getElementById('sentence-display'),
+    instruction: document.getElementById('instruction-display'),
+    choices: document.getElementById('choice-btns'),
+    input: document.getElementById('text-input'),
+    submit: document.getElementById('submit-btn'),
+    boosts: document.querySelectorAll('.boost-btn'),
+    feedback: document.getElementById('feedback'),
+    finalScore: document.getElementById('final-score'),
+    endMessage: document.getElementById('end-message'),
+    confetti: document.getElementById('confetti-canvas')
+  };
+
+  // State
+  const state = {
+    score: 0,
+    level: 0, // 0=Tutorial, 1-5=Levels
+    questionIdx: 0,
+    questions: [],
+    timer: 0,
+    timerMax: 0,
+    interval: null,
+    streak: 0,
+    consecutiveRight: 0,
+    consecutiveWrong: 0,
+    isProcessing: false,
+    doubleActive: 0,
+    boosts: {
+      double: { unlocked: false, uses: 3, name: 'Double Pts' },
+      freeze: { unlocked: false, uses: 3, name: 'Freeze' },
+      skip: { unlocked: false, uses: 3, name: 'Skip' },
+      hint: { unlocked: false, uses: 3, name: 'Hint' }
+    },
+    milestones: { 500: 'double', 1000: 'freeze', 2000: 'skip', 3000: 'hint' },
+    unlockedMilestones: new Set()
+  };
+
+  // Data
+  const RAW_QUESTIONS = {
+    1: [
+      { id: 'L1-1', sentence: '"The window was broken by the boy."', type: 'choice', expected: 'Passive', hint: 'Look for "was + verb-ed" + "by".', explanation: 'Subject receives the action. Correct!' },
+      { id: 'L1-2', sentence: '"She writes a letter."', type: 'choice', expected: 'Active', hint: 'Subject performs the action directly.', explanation: 'Simple present active structure.' },
+      { id: 'L1-3', sentence: '"The song is sung by the choir."', type: 'choice', expected: 'Passive', hint: '"is + past participle" indicates passive present.', explanation: 'Object became subject.' },
+      { id: 'L1-4', sentence: '"They are eating apples."', type: 'choice', expected: 'Active', hint: 'Present continuous active form.', explanation: 'Subject is doing the eating.' },
+      { id: 'L1-5', sentence: '"The cake has been eaten."', type: 'choice', expected: 'Passive', hint: '"has been + past participle" without agent.', explanation: 'Present perfect passive.' }
+    ],
+    2: [
+      { id: 'L2-1', sentence: '"The child finds the toy."', type: 'text', expected: 'The toys are found by the child.', hint: 'Make "toy" plural. Use "are found".', explanation: 'Singular active → Plural passive.' },
+      { id: 'L2-2', sentence: '"The woman buys a dress."', type: 'text', expected: 'The dresses are bought by the woman.', hint: 'Pluralize "dress". Verb: "are bought".', explanation: 'Object pluralizes, verb matches.' },
+      { id: 'L2-3', sentence: '"The artist paints a portrait."', type: 'text', expected: 'The portraits are painted by the artist.', hint: '"portraits" + "are painted".', explanation: 'Present tense "paints" → "are painted".' },
+      { id: 'L2-4', sentence: '"The writer finishes a novel."', type: 'text', expected: 'The novels are finished by the writer.', hint: '"novels" + "are finished".', explanation: 'Agreement matches new plural subject.' },
+      { id: 'L2-5', sentence: '"The mechanic repairs the car."', type: 'text', expected: 'The cars are repaired by the mechanic.', hint: '"cars" + "are repaired".', explanation: 'Active → Passive plural shift.' }
+    ],
+    3: [
+      { id: 'L3-1', sentence: '"The chef prepares dinner." → Change to Passive Past.', type: 'text', expected: 'Dinner was prepared by the chef.', hint: 'Past tense of be + prepared.', explanation: 'Present → Past Passive.' },
+      { id: 'L3-2', sentence: '"The team will win the match." → Change to Passive Present Perfect.', type: 'text', expected: 'The match has been won by the team.', hint: 'has been + past participle.', explanation: 'Future → Present Perfect Passive.' },
+      { id: 'L3-3', sentence: '"The storm destroyed the house." → Change to Passive Present.', type: 'text', expected: 'The house is destroyed by the storm.', hint: 'Use "is" for present passive.', explanation: 'Past → Present Passive.' },
+      { id: 'L3-4', sentence: '"The dog is chasing the cat." → Change to Passive Past Continuous.', type: 'text', expected: 'The cat was being chased by the dog.', hint: 'was being + chased.', explanation: 'Present Cont. → Past Cont. Passive.' },
+      { id: 'L3-5', sentence: '"They have finished the project." → Change to Passive Future.', type: 'text', expected: 'The project will be finished by them.', hint: 'will be + finished.', explanation: 'Present Perfect → Future Passive.' }
+    ],
+    4: [
+      { id: 'L4-1', sentence: '"Someone cleaned the room."', type: 'text', expected: 'The room was cleaned.', hint: 'Omit "by someone".', explanation: 'Unknown agent is omitted.' },
+      { id: 'L4-2', sentence: '"People speak Spanish here."', type: 'text', expected: 'Spanish is spoken here.', hint: 'Focus on "Spanish". No "by people".', explanation: 'General statement, agent omitted.' },
+      { id: 'L4-3', sentence: '"Nobody saw the thief."', type: 'text', expected: 'The thief was not seen.', hint: 'Negative passive without "by nobody".', explanation: '"was not seen" replaces active.' },
+      { id: 'L4-4', sentence: '"They will announce the winner."', type: 'text', expected: 'The winner will be announced.', hint: 'Future passive without agent.', explanation: 'Formal context often omits agent.' },
+      { id: 'L4-5', sentence: '"Someone has stolen my wallet."', type: 'text', expected: 'My wallet has been stolen.', hint: 'Present perfect passive, drop agent.', explanation: 'Emphasis on result, not doer.' }
+    ]
+  };
+
+  // Normalize Input
+  const normalize = (str) => str.trim().toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ');
+
+  // Confetti Engine
+  let confettiCtx, confettiW, confettiH, particles = [], animId;
+  function initConfetti() {
+    confettiW = els.confetti.width = window.innerWidth;
+    confettiH = els.confetti.height = window.innerHeight;
+    confettiCtx = els.confetti.getContext('2d');
+  }
+  function fireConfetti() {
+    if (!confettiCtx) initConfetti();
+    particles = [];
+    const colors = ['#2563eb', '#16a34a', '#ca8a04', '#dc2626', '#9333ea'];
+    for(let i=0; i<150; i++) {
+      particles.push({
+        x: Math.random() * confettiW, y: Math.random() * confettiH - confettiH,
+        vx: (Math.random() - 0.5) * 4, vy: Math.random() * 3 + 2,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        size: Math.random() * 6 + 4, rot: Math.random() * 360, speed: Math.random() * 0.2
+      });
+    }
+    animateConfetti();
+  }
+  function animateConfetti() {
+    confettiCtx.clearRect(0, 0, confettiW, confettiH);
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.rot += p.speed;
+      confettiCtx.save();
+      confettiCtx.translate(p.x, p.y); confettiCtx.rotate(p.rot * Math.PI / 180);
+      confettiCtx.fillStyle = p.color;
+      confettiCtx.fillRect(-p.size/2, -p.size/2, p.size, p.size);
+      confettiCtx.restore();
+    });
+    if (particles.some(p => p.y < confettiH + 20)) animId = requestAnimationFrame(animateConfetti);
+    else cancelAnimationFrame(animId);
+  }
+
+  // UI Updates
+  function showScreen(name) {
+    Object.values(els.screens).forEach(s => s.classList.remove('active'));
+    els.screens[name].classList.add('active');
+  }
+  function updateTimerUI() {
+    const pct = Math.max(0, (state.timer / state.timerMax) * 100);
+    els.timerBar.style.width = `${pct}%`;
+    els.timerBar.style.background = pct < 30 ? 'var(--error)' : pct < 60 ? 'var(--warning)' : 'var(--primary)';
+    els.timerText.textContent = `${Math.ceil(state.timer)}s`;
+  }
+  function updateScore() {
+    els.score.textContent = state.score;
+    els.highScore.textContent = `(Best: ${localStorage.getItem('vs_highscore') || 0})`;
+    checkMilestones();
+  }
+  function updateBoosts() {
+    els.boosts.forEach(btn => {
+      const key = btn.dataset.boost;
+      const b = state.boosts[key];
+      btn.disabled = !b.unlocked || b.uses <= 0 || state.isProcessing;
+      btn.classList.toggle('unlocked', b.unlocked);
+      btn.querySelector('.boost-count').hidden = !b.unlocked;
+      btn.querySelector('.boost-count').textContent = b.uses;
+      btn.setAttribute('aria-label', `${b.name} (${b.unlocked ? `${b.uses} left` : 'Locked'})`);
+    });
+  }
+  function setFeedback(msg, type = 'info') {
+    els.feedback.textContent = msg;
+    els.feedback.className = `feedback ${type}`;
+  }
+  function disableControls(disabled = true) {
+    state.isProcessing = disabled;
+    els.submit.disabled = disabled;
+    els.input.disabled = disabled;
+    els.choices.querySelectorAll('button').forEach(b => b.disabled = disabled);
+    if (!disabled) els.input.focus();
+    updateBoosts();
+  }
+
+  // Game Logic
+  function checkMilestones() {
+    Object.entries(state.milestones).forEach(([threshold, key]) => {
+      if (state.score >= parseInt(threshold) && !state.unlockedMilestones.has(threshold)) {
+        state.unlockedMilestones.add(threshold);
+        state.boosts[key].unlocked = true;
+        setFeedback(`🎉 Milestone reached! ${state.boosts[key].name} unlocked!`, 'info');
+      }
+    });
+  }
+
+  function calcPoints() {
+    let base = 100;
+    let timeBonus = Math.ceil(state.timer) * 2;
+    let comboBonus = state.consecutiveRight >= 4 ? 50 : 0; // +50 after 3 correct
+    let total = base + timeBonus + comboBonus;
+    if (state.doubleActive > 0) {
+      total *= 2;
+      state.doubleActive--;
+      if (state.doubleActive === 0) setFeedback('Double boost used! Lasts 1 more question.', 'info');
+    }
+    return total;
+  }
+
+  function handleDifficulty() {
+    let base = state.level === 5 ? 15 : 20;
+    if (state.consecutiveWrong >= 2) base += 5;
+    if (state.consecutiveRight >= 5) base = Math.max(8, base - 2);
+    state.timerMax = base;
+  }
+
+  function startTimer() {
+    handleDifficulty();
+    state.timer = state.timerMax;
+    updateTimerUI();
+    clearInterval(state.interval);
+    state.interval = setInterval(() => {
+      state.timer -= 0.1;
+      updateTimerUI();
+      if (state.timer <= 0) {
+        clearInterval(state.interval);
+        handleAnswer(null, true); // timeout
+      }
+    }, 100);
+  }
+
+  function nextQuestion() {
+    if (state.questionIdx >= state.questions.length) {
+      completeLevel();
+      return;
+    }
+
+    state.isProcessing = false;
+    state.timer = 0;
+    els.input.value = '';
+    els.feedback.className = 'feedback';
+    els.feedback.textContent = '';
+
+    const q = state.questions[state.questionIdx];
+    state.questionIdx++;
+
+    els.sentence.textContent = q.sentence;
+    els.instruction.textContent = q.type === 'choice' ? 'Is this Active or Passive?' : 'Type the correct transformation.';
+
+    if (q.type === 'choice') {
+      els.choices.classList.remove('hidden');
+      els.input.classList.add('hidden');
+      disableControls(false);
+    } else {
+      els.choices.classList.add('hidden');
+      els.input.classList.remove('hidden');
+      disableControls(false);
+    }
+
+    startTimer();
+  }
+
+  function handleAnswer(input, isTimeout = false) {
+    clearInterval(state.interval);
+    disableControls(true);
+
+    const q = state.questions[state.questionIdx - 1];
+    let correct = false;
+    let points = 0;
+
+    if (isTimeout) {
+      correct = false;
+      setFeedback(`⏰ Time's up! Answer: ${q.expected}`, 'wrong');
+    } else if (q.type === 'choice') {
+      correct = input === q.expected;
+      if (!correct) setFeedback(`❌ Incorrect. ${q.explanation}`, 'wrong');
+    } else {
+      correct = normalize(input) === normalize(q.expected);
+      if (!correct) setFeedback(`❌ Incorrect. Correct: ${q.expected}\n💡 ${q.explanation}`, 'wrong');
+    }
+
+    if (correct) {
+      state.consecutiveRight++;
+      state.consecutiveWrong = 0;
+      points = calcPoints();
+      state.score += points;
+      state.streak++;
+      let bonusStr = points > 100 ? ` (+${points - 100} bonus!)` : '';
+      setFeedback(`✅ Great! +${points} points${bonusStr}`, 'correct');
+      fireConfetti();
+    } else {
+      state.consecutiveRight = 0;
+      state.consecutiveWrong++;
+      state.streak = 0;
+      if (state.doubleActive > 0) state.doubleActive = 0; // Lose double on wrong
+    }
+
+    updateScore();
+    updateBoosts();
+
+    // Delay before next
+    setTimeout(() => {
+      nextQuestion();
+    }, 2500);
+  }
+
+  function completeLevel() {
+    state.score += 500;
+    updateScore();
+    fireConfetti();
+
+    if (state.level >= 5) {
+      showEndScreen();
+      return;
+    }
+    state.level++;
+    state.questionIdx = 0;
+    setFeedback(`🏅 Level ${state.level - 1} Complete! +500 bonus. Next: Level ${state.level}`, 'info');
+    setTimeout(() => nextQuestion(), 2000);
+  }
+
+  function showEndScreen() {
+    els.finalScore.textContent = state.score;
+    const best = parseInt(localStorage.getItem('vs_highscore') || 0);
+    if (state.score > best) {
+      localStorage.setItem('vs_highscore', state.score);
+      els.endMessage.textContent = '🌟 New High Score! Outstanding work!';
+    } else {
+      els.endMessage.textContent = `Great effort! Beat your high score next time. (Best: ${best})`;
+    }
+    showScreen('end');
+  }
+
+  function initLevelData() {
+    if (state.level <= 4) {
+      state.questions = [...RAW_QUESTIONS[state.level]];
+    } else {
+      // Level 5: mix from 1-4, 10 questions, no dupes
+      const pool = [];
+      [1,2,3,4].forEach(l => pool.push(...RAW_QUESTIONS[l]));
+      // Shuffle
+      for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+      }
+      state.questions = pool.slice(0, 10);
+    }
+  }
+
+  function startGame() {
+    state.score = 0;
+    state.level = 1;
+    state.questionIdx = 0;
+    state.consecutiveRight = 0;
+    state.consecutiveWrong = 0;
+    state.doubleActive = 0;
+    state.unlockedMilestones.clear();
+    state.boosts.double.unlocked = false;
+    state.boosts.freeze.unlocked = false;
+    state.boosts.skip.unlocked = false;
+    state.boosts.hint.unlocked = false;
+    
+    Object.values(state.boosts).forEach(b => b.uses = 3);
+    
+    updateScore();
+    updateBoosts();
+    initLevelData();
+    showScreen('game');
+    nextQuestion();
+  }
+
+  function resetGame() {
+    clearInterval(state.interval);
+    cancelAnimationFrame(animId);
+    if (confettiCtx) confettiCtx.clearRect(0, 0, confettiW, confettiH);
+    startGame();
+  }
+
+  // Event Listeners
+  document.getElementById('start-btn').addEventListener('click', startGame);
+  document.getElementById('restart-btn').addEventListener('click', resetGame);
+  document.getElementById('reset-btn').addEventListener('click', resetGame);
+
+  els.choices.addEventListener('click', e => {
+    if (state.isProcessing) return;
+    const btn = e.target.closest('[data-choice]');
+    if (btn) handleAnswer(btn.dataset.choice);
+  });
+
+  els.submit.addEventListener('click', () => {
+    if (state.isProcessing) return;
+    const val = els.input.value.trim();
+    if (!val) return setFeedback('⚠️ Type your answer first.', 'info');
+    handleAnswer(val);
+  });
+
+  els.input.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !state.isProcessing) {
+      els.submit.click();
+    }
+  });
+
+  els.boosts.forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (state.isProcessing) return;
+      const key = btn.dataset.boost;
+      const b = state.boosts[key];
+      if (!b.unlocked || b.uses <= 0) return;
+
+      b.uses--;
+      disableControls(true);
+
+      if (key === 'double') {
+        state.doubleActive = 2;
+        setFeedback('⚡ Double points active for 2 questions!', 'info');
+      } else if (key === 'freeze') {
+        clearInterval(state.interval);
+        setFeedback('❄️ Timer frozen for 5 seconds!', 'info');
+        setTimeout(() => startTimer(), 5000);
+        updateBoosts();
+        disableControls(false);
+        return;
+      } else if (key === 'skip') {
+        setFeedback('⏭️ Question skipped. Moving on...', 'info');
+        setTimeout(() => {
+          clearInterval(state.interval);
+          nextQuestion();
+        }, 1000);
+        updateBoosts();
+        return;
+      } else if (key === 'hint') {
+        const q = state.questions[state.questionIdx - 1];
+        setFeedback(`💡 Hint: ${q.hint}`, 'info');
+        disableControls(false);
+        return;
+      }
+
+      updateBoosts();
+      disableControls(false);
+    });
+  });
+
+  window.addEventListener('resize', () => {
+    if (confettiCtx) {
+      confettiW = els.confetti.width = window.innerWidth;
+      confettiH = els.confetti.height = window.innerHeight;
+    }
+  });
+
+  // Init
+  els.highScore.textContent = `(Best: ${localStorage.getItem('vs_highscore') || 0})`;
+})();
+</script>
+</body>
+</html>
