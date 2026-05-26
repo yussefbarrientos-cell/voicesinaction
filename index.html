@@ -1,1061 +1,823 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Voice Shifters: Brick Breaker</title>
-    <style>
-        :root {
-            --bg-gradient: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            --primary: #00f5ff;
-            --secondary: #ff00ff;
-            --accent: #ffaa00;
-            --success: #00ff88;
-            --danger: #ff4444;
-            --glass: rgba(255, 255, 255, 0.1);
-            --glass-border: rgba(255, 255, 255, 0.2);
-            --font-main: 'Segoe UI', system-ui, -apple-system, sans-serif;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Voice Shifters | Active & Passive Rescue</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            touch-action: manipulation;
-        }
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', 'Inter', 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      min-height: 100vh;
+      padding: 1rem;
+      color: #f1f5f9;
+    }
 
-        body {
-            background: var(--bg-gradient);
-            color: white;
-            font-family: var(--font-main);
-            overflow: hidden;
-            height: 100vh;
-            width: 100vw;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
+    .game-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(2px);
+      border-radius: 2rem;
+      padding: 1.5rem;
+      box-shadow: 0 25px 45px rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
 
-        #game-container {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-            max-width: 800px;
-            max-height: 900px;
-        }
+    /* Header */
+    .game-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid rgba(245,158,11,0.5);
+      margin-bottom: 1.5rem;
+    }
+    .game-title h1 {
+      font-size: 1.5rem;
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .game-title p {
+      font-size: 0.75rem;
+      color: #94a3b8;
+    }
+    .score-panel {
+      text-align: right;
+      background: #0f172a;
+      padding: 0.5rem 1rem;
+      border-radius: 2rem;
+    }
+    .score-panel div {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #fbbf24;
+    }
+    .score-panel small {
+      font-size: 0.7rem;
+      color: #94a3b8;
+    }
 
-        canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-        }
+    /* Level & Timer */
+    .info-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      background: #0f172a;
+      padding: 0.8rem 1.2rem;
+      border-radius: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .level-badge {
+      background: #f59e0b;
+      color: #0f172a;
+      padding: 0.3rem 0.8rem;
+      border-radius: 2rem;
+      font-weight: bold;
+      font-size: 0.85rem;
+    }
+    .timer-box {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      flex: 1;
+      max-width: 250px;
+    }
+    .timer-box span {
+      font-family: monospace;
+      font-size: 1.4rem;
+      font-weight: bold;
+      background: #00000066;
+      padding: 0.2rem 0.6rem;
+      border-radius: 0.5rem;
+    }
+    .timer-bar {
+      flex: 1;
+      height: 8px;
+      background: #334155;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .timer-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #22c55e, #fbbf24);
+      transition: width 0.1s linear;
+    }
 
-        .hud {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            right: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            pointer-events: none;
-            z-index: 10;
-        }
+    /* Main Card */
+    .question-card {
+      background: #1e293b;
+      border-radius: 1.5rem;
+      padding: 1.8rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
+    .sentence {
+      font-size: 1.3rem;
+      font-weight: 500;
+      background: #0f172a;
+      padding: 1rem;
+      border-radius: 1rem;
+      text-align: center;
+      margin-bottom: 1rem;
+      border-left: 4px solid #f59e0b;
+    }
+    .question-prompt {
+      color: #94a3b8;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+    .answer-area {
+      display: flex;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+    .answer-input {
+      flex: 3;
+      padding: 0.9rem;
+      font-size: 1rem;
+      border: 2px solid #334155;
+      background: #0f172a;
+      color: #f1f5f9;
+      border-radius: 1rem;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .answer-input:focus {
+      border-color: #f59e0b;
+    }
+    .submit-btn {
+      flex: 1;
+      background: #f59e0b;
+      color: #0f172a;
+      border: none;
+      padding: 0.9rem 1.2rem;
+      font-weight: bold;
+      border-radius: 1rem;
+      cursor: pointer;
+      transition: transform 0.1s, background 0.2s;
+    }
+    .submit-btn:active {
+      transform: scale(0.97);
+    }
+    .submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
 
-        .hud-item {
-            background: var(--glass);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
-            padding: 8px 16px;
-            font-size: 14px;
-            font-weight: 600;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-        }
+    /* Boosts */
+    .boosts {
+      display: flex;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin: 1.5rem 0;
+    }
+    .boost-btn {
+      background: #334155;
+      border: none;
+      padding: 0.6rem 1rem;
+      border-radius: 2rem;
+      color: #f1f5f9;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .boost-btn:active {
+      transform: scale(0.96);
+    }
+    .boost-btn.disabled-boost {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .boost-active {
+      background: #f59e0b;
+      color: #0f172a;
+      box-shadow: 0 0 8px #f59e0b;
+    }
 
-        .hud-item .label {
-            color: rgba(255,255,255,0.7);
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+    .message-area {
+      background: #0f172a;
+      padding: 0.8rem;
+      border-radius: 1rem;
+      text-align: center;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+      min-height: 65px;
+    }
 
-        .hud-item .value {
-            font-size: 18px;
-            color: var(--primary);
-        }
+    .reset-btn {
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 0.7rem 1.2rem;
+      border-radius: 2rem;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 0.5rem;
+    }
 
-        .hud-center {
-            text-align: center;
-            flex: 1;
-            margin: 0 10px;
-        }
+    .highscore {
+      text-align: center;
+      margin-top: 1rem;
+      font-size: 0.8rem;
+      color: #94a3b8;
+    }
 
-        .hud-center .theme {
-            font-size: 16px;
-            color: var(--accent);
-            margin-bottom: 4px;
-        }
+    /* Reference chart modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 1rem;
+    }
+    .modal.active {
+      display: flex;
+    }
+    .modal-content {
+      background: #1e293b;
+      max-width: 95%;
+      width: 700px;
+      max-height: 85vh;
+      overflow-y: auto;
+      border-radius: 1.5rem;
+      padding: 1.5rem;
+    }
+    .modal-content table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.75rem;
+    }
+    .modal-content th, .modal-content td {
+      border: 1px solid #334155;
+      padding: 0.5rem;
+      text-align: left;
+    }
+    .close-modal {
+      float: right;
+      background: #f59e0b;
+      border: none;
+      padding: 0.3rem 0.8rem;
+      border-radius: 1rem;
+      cursor: pointer;
+      margin-bottom: 1rem;
+    }
 
-        .hud-right {
-            text-align: right;
-        }
-
-        .question-popup {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.95);
-            backdrop-filter: blur(20px);
-            border: 2px solid var(--primary);
-            border-radius: 20px;
-            padding: 30px;
-            width: 90%;
-            max-width: 500px;
-            text-align: center;
-            z-index: 100;
-            display: none;
-            animation: popIn 0.3s ease;
-        }
-
-        @keyframes popIn {
-            from { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
-            to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-        }
-
-        .question-popup h3 {
-            color: var(--primary);
-            margin-bottom: 10px;
-            font-size: 20px;
-        }
-
-        .question-popup .sentence {
-            background: rgba(255,255,255,0.1);
-            padding: 15px;
-            border-radius: 10px;
-            margin: 15px 0;
-            font-size: 16px;
-            line-height: 1.4;
-        }
-
-        .question-popup .instruction {
-            color: var(--accent);
-            font-size: 14px;
-            margin-bottom: 20px;
-        }
-
-        .choices {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .choice-btn {
-            background: var(--glass);
-            border: 2px solid var(--glass-border);
-            color: white;
-            padding: 12px;
-            border-radius: 10px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-            pointer-events: auto;
-        }
-
-        .choice-btn:hover {
-            background: rgba(0, 245, 255, 0.2);
-            border-color: var(--primary);
-            transform: translateY(-2px);
-        }
-
-        .choice-btn:active {
-            transform: translateY(0);
-        }
-
-        .choice-btn.correct {
-            background: rgba(0, 255, 136, 0.3);
-            border-color: var(--success);
-        }
-
-        .choice-btn.wrong {
-            background: rgba(255, 68, 68, 0.3);
-            border-color: var(--danger);
-        }
-
-        .feedback {
-            margin-top: 15px;
-            font-size: 16px;
-            font-weight: 600;
-            min-height: 24px;
-        }
-
-        .overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(10px);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 200;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .overlay h1 {
-            font-size: 36px;
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 10px;
-        }
-
-        .overlay h2 {
-            font-size: 28px;
-            color: var(--accent);
-            margin-bottom: 20px;
-        }
-
-        .overlay p {
-            font-size: 16px;
-            color: rgba(255,255,255,0.8);
-            margin-bottom: 20px;
-            max-width: 400px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border: none;
-            color: white;
-            padding: 15px 40px;
-            border-radius: 30px;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            pointer-events: auto;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        .btn-primary:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 30px rgba(0, 245, 255, 0.5);
-        }
-
-        .btn-secondary {
-            background: var(--glass);
-            border: 2px solid var(--glass-border);
-            color: white;
-            padding: 12px 30px;
-            border-radius: 25px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: all 0.2s;
-            pointer-events: auto;
-        }
-
-        .lives-display {
-            display: flex;
-            gap: 5px;
-        }
-
-        .heart {
-            width: 24px;
-            height: 24px;
-            filter: drop-shadow(0 0 5px rgba(255, 0, 100, 0.5));
-        }
-
-        .streak-display {
-            color: var(--accent);
-        }
-
-        .combo-text {
-            position: absolute;
-            font-size: 24px;
-            font-weight: 800;
-            color: var(--accent);
-            text-shadow: 0 0 20px rgba(255, 170, 0, 0.8);
-            pointer-events: none;
-            animation: comboFloat 1s ease-out forwards;
-            z-index: 50;
-        }
-
-        @keyframes comboFloat {
-            0% { transform: translateY(0) scale(1); opacity: 1; }
-            100% { transform: translateY(-50px) scale(1.5); opacity: 0; }
-        }
-
-        .level-up-text {
-            position: absolute;
-            font-size: 36px;
-            font-weight: 900;
-            background: linear-gradient(45deg, var(--primary), var(--success));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            pointer-events: none;
-            animation: levelUp 2s ease-out forwards;
-            z-index: 60;
-        }
-
-        @keyframes levelUp {
-            0% { transform: scale(0.5); opacity: 0; }
-            20% { transform: scale(1.2); opacity: 1; }
-            80% { transform: scale(1); opacity: 1; }
-            100% { transform: scale(1.5); opacity: 0; }
-        }
-
-        .instructions {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--glass);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border);
-            border-radius: 15px;
-            padding: 12px 24px;
-            font-size: 14px;
-            color: rgba(255,255,255,0.9);
-            text-align: center;
-            z-index: 10;
-            pointer-events: none;
-        }
-
-        @media (max-width: 600px) {
-            .hud-item { padding: 6px 10px; font-size: 12px; }
-            .hud-item .value { font-size: 14px; }
-            .question-popup { padding: 20px; }
-            .question-popup .sentence { font-size: 14px; }
-            .choice-btn { padding: 10px; font-size: 13px; }
-            .overlay h1 { font-size: 28px; }
-            .overlay h2 { font-size: 22px; }
-        }
-
-        .particle {
-            position: absolute;
-            pointer-events: none;
-            border-radius: 50%;
-            z-index: 40;
-        }
-
-        .shake {
-            animation: shake 0.5s ease;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
-        }
-    </style>
+    @media (max-width: 550px) {
+      .game-container { padding: 1rem; }
+      .sentence { font-size: 1rem; }
+      .answer-area { flex-direction: column; }
+      .submit-btn { width: 100%; }
+    }
+  </style>
 </head>
 <body>
-    <div id="game-container">
-        <canvas id="game-canvas"></canvas>
-        
-        <div class="hud" id="hud">
-            <div class="hud-item">
-                <div class="label">Score</div>
-                <div class="value" id="score-display">0</div>
-            </div>
-            <div class="hud-item hud-center">
-                <div class="theme" id="theme-display">Active & Passive Voice</div>
-                <div class="label" id="level-display">Level 1</div>
-            </div>
-            <div class="hud-item hud-right">
-                <div class="label">Lives</div>
-                <div class="lives-display" id="lives-display"></div>
-                <div class="label" style="margin-top: 8px;">Combo</div>
-                <div class="streak-display" id="combo-display">x0</div>
-            </div>
-        </div>
-
-        <div class="question-popup" id="question-popup">
-            <h3 id="question-title">Grammar Challenge!</h3>
-            <div class="sentence" id="question-sentence"></div>
-            <div class="instruction" id="question-instruction"></div>
-            <div class="choices" id="choices-container"></div>
-            <div class="feedback" id="feedback"></div>
-        </div>
-
-        <div class="instructions" id="instructions">
-            Move paddle with mouse/touch • Hit grammar bricks to answer
-        </div>
-
-        <div class="overlay" id="start-screen">
-            <h1>Voice Shifters</h1>
-            <h2>Brick Breaker</h2>
-            <p>Master Active & Passive Voice by breaking grammar bricks! Hit the bricks and answer correctly to destroy them. Build combos for bonus points!</p>
-            <button class="btn-primary" onclick="game.start()">Start Game</button>
-            <button class="btn-secondary" onclick="game.showTutorial()">How to Play</button>
-        </div>
-
-        <div class="overlay" id="game-over-screen" style="display: none;">
-            <h1>Game Over</h1>
-            <p id="final-score"></p>
-            <p id="high-score"></p>
-            <button class="btn-primary" onclick="game.restart()">Play Again</button>
-            <button class="btn-secondary" onclick="game.showStart()">Main Menu</button>
-        </div>
-
-        <div class="overlay" id="level-complete-screen" style="display: none;">
-            <h2 id="level-complete-title">Level Complete!</h2>
-            <p id="level-complete-score"></p>
-            <button class="btn-primary" onclick="game.nextLevel()">Next Level</button>
-        </div>
-
-        <div class="overlay" id="tutorial-screen" style="display: none;">
-            <h2>How to Play</h2>
-            <p>🎯 Move the paddle with mouse or touch</p>
-            <p>🧱 Hit the grammar bricks to trigger questions</p>
-            <p>✅ Answer correctly to destroy bricks and score points</p>
-            <p>❌ Wrong answers lose a life and reset combo</p>
-            <p>🔥 Build streaks for combo multipliers!</p>
-            <button class="btn-primary" onclick="game.hideTutorial()">Got it!</button>
-        </div>
+<div class="game-container">
+  <div class="game-header">
+    <div class="game-title">
+      <h1>🎙️ Voice Shifters</h1>
+      <p>Active ↔ Passive Rescue</p>
     </div>
+    <div class="score-panel">
+      <div id="scoreDisplay">0</div>
+      <small>POINTS</small>
+    </div>
+  </div>
 
-    <script>
-        // Game Configuration
-        const CONFIG = {
-            PADDLE_WIDTH: 120,
-            PADDLE_HEIGHT: 16,
-            BALL_RADIUS: 10,
-            BALL_SPEED: 6,
-            BRICK_ROWS: 6,
-            BRICK_COLS: 8,
-            BRICK_PADDING: 4,
-            BRICK_HEIGHT: 40,
-            INITIAL_LIVES: 3,
-            COLORS: {
-                paddle: '#00f5ff',
-                ball: '#ffffff',
-                brick: ['#ff4444', '#ff8800', '#ffcc00', '#88cc00', '#00cc88', '#0088ff', '#8800ff', '#ff0088'],
-                particle: ['#ff4444', '#ff8800', '#ffcc00', '#88cc00', '#00cc88', '#0088ff', '#8800ff', '#ff0088']
-            }
-        };
+  <div class="info-bar">
+    <div class="level-badge" id="levelBadge">Level 1 / 5</div>
+    <div class="timer-box">
+      <span id="timerSeconds">20</span>
+      <div class="timer-bar"><div class="timer-fill" id="timerFill" style="width:100%"></div></div>
+    </div>
+  </div>
 
-        // Grammar Data
-        const GRAMMAR_LEVELS = {
-            1: {
-                theme: "Simple Active & Passive",
-                difficulty: 1,
-                questions: [
-                    { sentence: "The cat chased the mouse.", question: "Change to passive:", choices: ["The mouse was chased by the cat.", "The mouse is chased by the cat.", "The mouse were chased by the cat.", "The mouse chased the cat."], correct: 0 },
-                    { sentence: "The chef cooks the meal.", question: "Change to passive:", choices: ["The meal is cooked by the chef.", "The meal was cooked by the chef.", "The meal cooking by the chef.", "The meal cooks by the chef."], correct: 0 },
-                    { sentence: "The teacher corrects the tests.", question: "Change to passive:", choices: ["The tests are corrected by the teacher.", "The tests is corrected by the teacher.", "The tests were corrected by the teacher.", "The tests corrected by the teacher."], correct: 0 },
-                    { sentence: "The ball was kicked by Lisa.", question: "Is this active or passive?", choices: ["Active", "Passive", "Neither", "Both"], correct: 1 },
-                    { sentence: "She writes a letter.", question: "Is this active or passive?", choices: ["Active", "Passive", "Neither", "Both"], correct: 0 },
-                    { sentence: "The song is sung by the choir.", question: "Is this active or passive?", choices: ["Active", "Passive", "Neither", "Both"], correct: 1 },
-                    { sentence: "They are eating apples.", question: "Is this active or passive?", choices: ["Active", "Passive", "Neither", "Both"], correct: 0 },
-                    { sentence: "The cake has been eaten.", question: "Is this active or passive?", choices: ["Active", "Passive", "Neither", "Both"], correct: 1 }
-                ]
-            },
-            2: {
-                theme: "Singular ↔ Plural Transformations",
-                difficulty: 2,
-                questions: [
-                    { sentence: "The child finds the toy.", question: "Change to passive plural:", choices: ["The toys are found by the child.", "The toys is found by the child.", "The toys were found by the child.", "The toys finding by the child."], correct: 0 },
-                    { sentence: "The woman buys a dress.", question: "Change to passive plural:", choices: ["The dresses are bought by the woman.", "The dresses is bought by the woman.", "The dresses were bought by the woman.", "The dresses buying by the woman."], correct: 0 },
-                    { sentence: "The artist paints a portrait.", question: "Change to passive plural:", choices: ["The portraits are painted by the artist.", "The portraits is painted by the artist.", "The portraits were painted by the artist.", "The portraits painting by the artist."], correct: 0 },
-                    { sentence: "The writer finishes a novel.", question: "Change to passive plural:", choices: ["The novels are finished by the writer.", "The novels is finished by the writer.", "The novels were finished by the writer.", "The novels finishing by the writer."], correct: 0 },
-                    { sentence: "The mechanic repairs the car.", question: "Change to passive plural:", choices: ["The cars are repaired by the mechanic.", "The cars is repaired by the mechanic.", "The cars were repaired by the mechanic.", "The cars repairing by the mechanic."], correct: 0 },
-                    { sentence: "The toys are found by the child.", question: "Change to active singular:", choices: ["The child finds the toy.", "The child find the toy.", "The child found the toy.", "The child finding the toy."], correct: 0 },
-                    { sentence: "The dresses are bought by the woman.", question: "Change to active singular:", choices: ["The woman buys a dress.", "The woman buy a dress.", "The woman bought a dress.", "The woman buying a dress."], correct: 0 },
-                    { sentence: "The portraits are painted by the artist.", question: "Change to active singular:", choices: ["The artist paints a portrait.", "The artist paint a portrait.", "The artist painted a portrait.", "The artist painting a portrait."], correct: 0 }
-                ]
-            },
-            3: {
-                theme: "Tense Changes in Passive",
-                difficulty: 3,
-                questions: [
-                    { sentence: "The chef prepares dinner. (Present → Past)", question: "Change to passive past:", choices: ["Dinner was prepared by the chef.", "Dinner is prepared by the chef.", "Dinner were prepared by the chef.", "Dinner preparing by the chef."], correct: 0 },
-                    { sentence: "The team will win the match. (Future → Present Perfect)", question: "Change to passive present perfect:", choices: ["The match has been won by the team.", "The match have been won by the team.", "The match was been won by the team.", "The match winning by the team."], correct: 0 },
-                    { sentence: "The storm destroyed the house. (Past → Present)", question: "Change to passive present:", choices: ["The house is destroyed by the storm.", "The house are destroyed by the storm.", "The house was destroyed by the storm.", "The house destroying by the storm."], correct: 0 },
-                    { sentence: "The dog is chasing the cat. (Present Cont. → Past Cont.)", question: "Change to passive past continuous:", choices: ["The cat was being chased by the dog.", "The cat were being chased by the dog.", "The cat is being chased by the dog.", "The cat chasing by the dog."], correct: 0 },
-                    { sentence: "They have finished the project. (Present Perfect → Future)", question: "Change to passive future:", choices: ["The project will be finished by them.", "The project will being finished by them.", "The project will finished by them.", "The project will finish by them."], correct: 0 },
-                    { sentence: "Dinner was prepared by the chef.", question: "Change to active present:", choices: ["The chef prepares dinner.", "The chef prepare dinner.", "The chef preparing dinner.", "The chef prepared dinner."], correct: 0 },
-                    { sentence: "The match has been won by the team.", question: "Change to active future:", choices: ["The team will win the match.", "The team wins the match.", "The team winning the match.", "The team won the match."], correct: 0 },
-                    { sentence: "The house is destroyed by the storm.", question: "Change to active past:", choices: ["The storm destroyed the house.", "The storm destroys the house.", "The storm destroying the house.", "The storm destroy the house."], correct: 0 }
-                ]
-            },
-            4: {
-                theme: "Agentless Passive & Advanced Forms",
-                difficulty: 4,
-                questions: [
-                    { sentence: "Someone cleaned the room.", question: "Change to agentless passive:", choices: ["The room was cleaned.", "The room were cleaned.", "The room is cleaned.", "The room cleaning."], correct: 0 },
-                    { sentence: "People speak Spanish here.", question: "Change to agentless passive:", choices: ["Spanish is spoken here.", "Spanish are spoken here.", "Spanish was spoken here.", "Spanish speaking here."], correct: 0 },
-                    { sentence: "Nobody saw the thief.", question: "Change to agentless passive:", choices: ["The thief was not seen.", "The thief were not seen.", "The thief is not seen.", "The thief not seeing."], correct: 0 },
-                    { sentence: "They will announce the winner.", question: "Change to agentless passive:", choices: ["The winner will be announced.", "The winner will being announced.", "The winner will announced.", "The winner announcing."], correct: 0 },
-                    { sentence: "Someone has stolen my wallet.", question: "Change to agentless passive:", choices: ["My wallet has been stolen.", "My wallet have been stolen.", "My wallet was been stolen.", "My wallet stealing."], correct: 0 },
-                    { sentence: "The room was cleaned.", question: "Change to active:", choices: ["Someone cleaned the room.", "Someone cleans the room.", "Someone cleaning the room.", "Someone clean the room."], correct: 0 },
-                    { sentence: "Spanish is spoken here.", question: "Change to active:", choices: ["People speak Spanish here.", "People speaks Spanish here.", "People speaking Spanish here.", "People spoke Spanish here."], correct: 0 },
-                    { sentence: "The thief was not seen.", question: "Change to active:", choices: ["Nobody saw the thief.", "Nobody sees the thief.", "Nobody seeing the thief.", "Nobody see the thief."], correct: 0 }
-                ]
-            },
-            5: {
-                theme: "Mixed Mastery Challenge",
-                difficulty: 5,
-                questions: [
-                    { sentence: "The window was broken by the boy.", question: "Change to active:", choices: ["The boy broke the window.", "The boy breaks the window.", "The boy breaking the window.", "The boy break the window."], correct: 0 },
-                    { sentence: "She writes a letter.", question: "Change to passive:", choices: ["A letter is written by her.", "A letter was written by her.", "A letter are written by her.", "A letter writing by her."], correct: 0 },
-                    { sentence: "The toys are found by the child.", question: "Change to active singular:", choices: ["The child finds the toy.", "The child find the toy.", "The child found the toy.", "The child finding the toy."], correct: 0 },
-                    { sentence: "Dinner was prepared by the chef.", question: "Change to active present:", choices: ["The chef prepares dinner.", "The chef prepare dinner.", "The chef preparing dinner.", "The chef prepared dinner."], correct: 0 },
-                    { sentence: "The room was cleaned.", question: "Change to active:", choices: ["Someone cleaned the room.", "Someone cleans the room.", "Someone cleaning the room.", "Someone clean the room."], correct: 0 },
-                    { sentence: "The cat chased the mouse.", question: "Change to passive:", choices: ["The mouse was chased by the cat.", "The mouse is chased by the cat.", "The mouse were chased by the cat.", "The mouse chased the cat."], correct: 0 },
-                    { sentence: "The match has been won by the team.", question: "Change to active future:", choices: ["The team will win the match.", "The team wins the match.", "The team winning the match.", "The team won the match."], correct: 0 },
-                    { sentence: "Spanish is spoken here.", question: "Change to active:", choices: ["People speak Spanish here.", "People speaks Spanish here.", "People speaking Spanish here.", "People spoke Spanish here."], correct: 0 }
-                ]
-            }
-        };
+  <div class="question-card">
+    <div class="sentence" id="sentenceText">The window was broken by the boy.</div>
+    <div class="question-prompt" id="questionPrompt">Identify: Active or Passive?</div>
+    <div class="answer-area">
+      <input type="text" id="answerInput" class="answer-input" placeholder="Type 'active', 'passive' or full sentence..." autocomplete="off">
+      <button id="submitBtn" class="submit-btn">✓ Submit</button>
+    </div>
+  </div>
 
-        // Game Class
-        class VoiceShiftersGame {
-            constructor() {
-                this.canvas = document.getElementById('game-canvas');
-                this.ctx = this.canvas.getContext('2d');
-                this.container = document.getElementById('game-container');
-                
-                this.state = {
-                    score: 0,
-                    lives: CONFIG.INITIAL_LIVES,
-                    level: 1,
-                    combo: 0,
-                    maxCombo: 0,
-                    playing: false,
-                    paused: false,
-                    questionActive: false,
-                    currentQuestion: null,
-                    currentBrick: null
-                };
+  <div class="boosts" id="boostsArea">
+    <button class="boost-btn" data-boost="double" id="boostDouble">⚡ 2x Pts (3)</button>
+    <button class="boost-btn" data-boost="freeze" id="boostFreeze">❄️ Freeze (3)</button>
+    <button class="boost-btn" data-boost="skip" id="boostSkip">⏩ Skip (3)</button>
+    <button class="boost-btn" data-boost="hint" id="boostHint">💡 Hint (3)</button>
+  </div>
 
-                this.entities = {
-                    paddle: { x: 0, y: 0, width: CONFIG.PADDLE_WIDTH, height: CONFIG.PADDLE_HEIGHT },
-                    ball: { x: 0, y: 0, dx: 0, dy: 0, radius: CONFIG.BALL_RADIUS, speed: CONFIG.BALL_SPEED },
-                    bricks: [],
-                    particles: []
-                };
+  <div class="message-area" id="messageArea">✨ Click START? Timer begins with first submit. Good luck!</div>
+  <button id="resetGameBtn" class="reset-btn">🔄 Reset Game</button>
+  <div class="highscore">🏆 High Score: <span id="highScoreSpan">0</span></div>
+  <div style="text-align:center; margin-top:0.8rem;"><button id="showRulesBtn" style="background:none; border:1px solid #f59e0b; color:#f59e0b; padding:0.3rem 1rem; border-radius:2rem;">📖 Grammar Chart</button></div>
+</div>
 
-                this.highScore = parseInt(localStorage.getItem('voiceShiftersHighScore')) || 0;
-                
-                this.setupEventListeners();
-                this.resize();
-            }
+<div id="grammarModal" class="modal">
+  <div class="modal-content">
+    <button class="close-modal" id="closeModalBtn">✖ Close</button>
+    <h3>Active ↔ Passive Reference</h3>
+    <table>
+      <thead><tr><th>Tense</th><th>Active</th><th>Passive</th></tr></thead>
+      <tbody>
+        <tr><td>Simple Present</td><td>The chef cooks the meal.</td><td>The meal is cooked by the chef.</td></tr>
+        <tr><td>Present Cont.</td><td>The chef is cooking the meal.</td><td>The meal is being cooked by the chef.</td></tr>
+        <tr><td>Simple Past</td><td>The chef cooked the meal.</td><td>The meal was cooked by the chef.</td></tr>
+        <tr><td>Past Cont.</td><td>The chef was cooking the meal.</td><td>The meal was being cooked by the chef.</td></tr>
+        <tr><td>Present Perfect</td><td>The chef has cooked the meal.</td><td>The meal has been cooked by the chef.</td></tr>
+        <tr><td>Future (will)</td><td>The chef will cook the meal.</td><td>The meal will be cooked by the chef.</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:0.8rem;">📌 Object becomes subject → changes verb agreement.<br>📌 "by + agent" is optional.</p>
+  </div>
+</div>
 
-            setupEventListeners() {
-                window.addEventListener('resize', () => this.resize());
-                
-                // Mouse control
-                this.canvas.addEventListener('mousemove', (e) => {
-                    if (!this.state.playing || this.state.paused || this.state.questionActive) return;
-                    const rect = this.canvas.getBoundingClientRect();
-                    const x = (e.clientX - rect.left) * (this.canvas.width / rect.width);
-                    this.entities.paddle.x = Math.max(0, Math.min(this.canvas.width - this.entities.paddle.width, x - this.entities.paddle.width / 2));
-                });
+<script>
+  // ---------- QUESTION BANK (FULL VARIETY: tenses, plurals, subjects) ----------
+  const levelData = {
+    1: { // Identify Active/Passive
+      type: 'identify',
+      questions: [
+        { sentence: "The window was broken by the boy.", correct: "passive" },
+        { sentence: "She writes a letter every morning.", correct: "active" },
+        { sentence: "The song is sung by the choir.", correct: "passive" },
+        { sentence: "They are eating fresh apples.", correct: "active" },
+        { sentence: "The delicious cake has been eaten by someone.", correct: "passive" }
+      ]
+    },
+    2: { // Singular → Plural passive
+      type: 'transform',
+      questions: [
+        { sentence: "The child finds the toy.", correct: "the toys are found by the child" },
+        { sentence: "The woman buys a red dress.", correct: "the dresses are bought by the woman" },
+        { sentence: "The artist paints a portrait.", correct: "the portraits are painted by the artist" },
+        { sentence: "The writer finishes a novel.", correct: "the novels are finished by the writer" },
+        { sentence: "The mechanic repairs the car.", correct: "the cars are repaired by the mechanic" }
+      ]
+    },
+    3: { // Tense change + passive
+      type: 'transform',
+      questions: [
+        { sentence: "The chef prepares dinner. (Active present → Passive past)", correct: "dinner was prepared by the chef" },
+        { sentence: "The team will win the match. (Active future → Passive present perfect)", correct: "the match has been won by the team" },
+        { sentence: "The storm destroyed the house. (Active past → Passive present)", correct: "the house is destroyed by the storm" },
+        { sentence: "The dog is chasing the cat. (Active present cont. → Passive past cont.)", correct: "the cat was being chased by the dog" },
+        { sentence: "They have finished the project. (Active perf. → Passive future)", correct: "the project will be finished by them" }
+      ]
+    },
+    4: { // No "by" agent
+      type: 'transform',
+      questions: [
+        { sentence: "Someone cleaned the room.", correct: "the room was cleaned" },
+        { sentence: "People speak Spanish here.", correct: "spanish is spoken here" },
+        { sentence: "Nobody saw the thief.", correct: "the thief was not seen" },
+        { sentence: "They will announce the winner tomorrow.", correct: "the winner will be announced" },
+        { sentence: "Someone has stolen my wallet.", correct: "my wallet has been stolen" }
+      ]
+    },
+    5: { // Mixed: randomly pick 10 from previous levels (avoid duplicates)
+      type: 'mixed',
+      questions: [] // filled at runtime
+    }
+  };
 
-                // Touch control
-                this.canvas.addEventListener('touchmove', (e) => {
-                    if (!this.state.playing || this.state.paused || this.state.questionActive) return;
-                    e.preventDefault();
-                    const rect = this.canvas.getBoundingClientRect();
-                    const x = (e.touches[0].clientX - rect.left) * (this.canvas.width / rect.width);
-                    this.entities.paddle.x = Math.max(0, Math.min(this.canvas.width - this.entities.paddle.width, x - this.entities.paddle.width / 2));
-                }, { passive: false });
+  // Generate mixed level 5 from levels 1-4 (unique)
+  function buildMixedLevel() {
+    const allPrev = [];
+    for(let lvl=1; lvl<=4; lvl++) {
+      levelData[lvl].questions.forEach(q => {
+        allPrev.push({ sentence: q.sentence, correct: q.correct, type: levelData[lvl].type });
+      });
+    }
+    // shuffle and pick first 10 unique
+    for(let i=allPrev.length-1; i>0; i--) {
+      const j = Math.floor(Math.random()*(i+1));
+      [allPrev[i], allPrev[j]] = [allPrev[j], allPrev[i]];
+    }
+    return allPrev.slice(0,10);
+  }
+  levelData[5].questions = buildMixedLevel();
 
-                // Click to start ball
-                this.canvas.addEventListener('click', () => {
-                    if (!this.state.playing || this.state.paused || this.state.questionActive) return;
-                    if (this.entities.ball.dx === 0 && this.entities.ball.dy === 0) {
-                        this.launchBall();
-                    }
-                });
+  // Game state
+  let currentLevel = 1;
+  let currentQIndex = 0;
+  let questionsList = [...levelData[1].questions];
+  let currentQuestionObj = questionsList[0];
+  let score = 0;
+  let combo = 0;
+  let timerSeconds = 20;
+  let timerInterval = null;
+  let canSubmit = true;
+  let boostDoubleRemaining = 0;    // 0 = inactive, >0 active for that many questions
+  let boostDoubleUsesLeft = 3;
+  let boostFreezeUses = 3;
+  let boostSkipUses = 3;
+  let boostHintUses = 3;
+  let freezeActive = false;
+  let boostUnlockThresholds = [500, 1000, 2000];
+  let unlocksGranted = 0;
+  let highScore = localStorage.getItem('voiceHighScore') ? parseInt(localStorage.getItem('voiceHighScore')) : 0;
 
-                // Keyboard
-                document.addEventListener('keydown', (e) => {
-                    if (e.key === 'ArrowLeft') {
-                        this.entities.paddle.x -= 30;
-                    } else if (e.key === 'ArrowRight') {
-                        this.entities.paddle.x += 30;
-                    } else if (e.key === ' ' && !this.state.questionActive) {
-                        if (this.entities.ball.dx === 0 && this.entities.ball.dy === 0) {
-                            this.launchBall();
-                        }
-                    }
-                    this.entities.paddle.x = Math.max(0, Math.min(this.canvas.width - this.entities.paddle.width, this.entities.paddle.x));
-                });
-            }
+  // DOM elements
+  const scoreDisplay = document.getElementById('scoreDisplay');
+  const levelBadge = document.getElementById('levelBadge');
+  const timerSecondsSpan = document.getElementById('timerSeconds');
+  const timerFill = document.getElementById('timerFill');
+  const sentenceText = document.getElementById('sentenceText');
+  const questionPrompt = document.getElementById('questionPrompt');
+  const answerInput = document.getElementById('answerInput');
+  const submitBtn = document.getElementById('submitBtn');
+  const messageArea = document.getElementById('messageArea');
+  const highScoreSpan = document.getElementById('highScoreSpan');
+  const boostDoubleBtn = document.getElementById('boostDouble');
+  const boostFreezeBtn = document.getElementById('boostFreeze');
+  const boostSkipBtn = document.getElementById('boostSkip');
+  const boostHintBtn = document.getElementById('boostHint');
 
-            resize() {
-                const rect = this.container.getBoundingClientRect();
-                this.canvas.width = rect.width;
-                this.canvas.height = rect.height;
-                this.entities.paddle.y = this.canvas.height - 40;
-                if (!this.state.playing) {
-                    this.entities.paddle.x = (this.canvas.width - CONFIG.PADDLE_WIDTH) / 2;
-                }
-            }
+  highScoreSpan.innerText = highScore;
 
-            launchBall() {
-                const angle = (Math.random() * Math.PI / 3) + Math.PI / 3;
-                this.entities.ball.dx = Math.cos(angle) * this.entities.ball.speed * (Math.random() > 0.5 ? 1 : -1);
-                this.entities.ball.dy = -Math.sin(angle) * this.entities.ball.speed;
-            }
+  function updateUIForLevel() {
+    levelBadge.innerText = `Level ${currentLevel} / 5`;
+    if(currentLevel === 5) timerSeconds = 15;
+    else timerSeconds = 20;
+    updateTimerDisplay();
+    const levelType = levelData[currentLevel].type;
+    if(levelType === 'identify') {
+      questionPrompt.innerText = 'Identify: Type "active" or "passive"';
+    } else {
+      questionPrompt.innerText = 'Rewrite in PASSIVE voice (full sentence):';
+    }
+  }
 
-            createBricks() {
-                const levelData = GRAMMAR_LEVELS[this.state.level];
-                const brickWidth = (this.canvas.width - (CONFIG.BRICK_COLS + 1) * CONFIG.BRICK_PADDING) / CONFIG.BRICK_COLS;
-                const brickHeight = CONFIG.BRICK_HEIGHT;
-                const startX = CONFIG.BRICK_PADDING;
-                const startY = 80;
+  function updateTimerDisplay() {
+    timerSecondsSpan.innerText = timerSeconds;
+    let maxTime = (currentLevel === 5) ? 15 : 20;
+    let percent = (timerSeconds / maxTime) * 100;
+    timerFill.style.width = `${Math.max(0, percent)}%`;
+  }
 
-                this.entities.bricks = [];
-                
-                for (let row = 0; row < CONFIG.BRICK_ROWS; row++) {
-                    for (let col = 0; col < CONFIG.BRICK_COLS; col++) {
-                        const question = levelData.questions[(row * CONFIG.BRICK_COLS + col) % levelData.questions.length];
-                        this.entities.bricks.push({
-                            x: startX + col * (brickWidth + CONFIG.BRICK_PADDING),
-                            y: startY + row * (brickHeight + CONFIG.BRICK_PADDING),
-                            width: brickWidth,
-                            height: brickHeight,
-                            color: CONFIG.COLORS.brick[row % CONFIG.COLORS.brick.length],
-                            alive: true,
-                            question: question,
-                            hits: 0,
-                            maxHits: levelData.difficulty > 3 ? 2 : 1
-                        });
-                    }
-                }
-            }
+  function stopTimer() {
+    if(timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+  }
 
-            start() {
-                this.state.score = 0;
-                this.state.lives = CONFIG.INITIAL_LIVES;
-                this.state.level = 1;
-                this.state.combo = 0;
-                this.state.maxCombo = 0;
-                this.state.playing = true;
-                this.state.paused = false;
-                this.state.questionActive = false;
-
-                this.hideAllOverlays();
-                this.updateHUD();
-                this.startLevel();
-                this.gameLoop();
-            }
-
-            startLevel() {
-                this.state.questionActive = false;
-                this.entities.ball.x = this.canvas.width / 2;
-                this.entities.ball.y = this.entities.paddle.y - CONFIG.BALL_RADIUS - 2;
-                this.entities.ball.dx = 0;
-                this.entities.ball.dy = 0;
-                
-                this.createBricks();
-                this.updateHUD();
-            }
-
-            restart() {
-                this.start();
-            }
-
-            showStart() {
-                this.hideAllOverlays();
-                document.getElementById('start-screen').style.display = 'flex';
-            }
-
-            showTutorial() {
-                this.hideAllOverlays();
-                document.getElementById('tutorial-screen').style.display = 'flex';
-            }
-
-            hideTutorial() {
-                document.getElementById('tutorial-screen').style.display = 'none';
-                document.getElementById('start-screen').style.display = 'flex';
-            }
-
-            hideAllOverlays() {
-                document.getElementById('start-screen').style.display = 'none';
-                document.getElementById('game-over-screen').style.display = 'none';
-                document.getElementById('level-complete-screen').style.display = 'none';
-                document.getElementById('tutorial-screen').style.display = 'none';
-                document.getElementById('question-popup').style.display = 'none';
-            }
-
-            updateHUD() {
-                document.getElementById('score-display').textContent = this.state.score;
-                document.getElementById('level-display').textContent = `Level ${this.state.level}`;
-                document.getElementById('theme-display').textContent = GRAMMAR_LEVELS[this.state.level].theme;
-                document.getElementById('combo-display').textContent = `x${this.state.combo}`;
-                
-                const livesContainer = document.getElementById('lives-display');
-                livesContainer.innerHTML = '';
-                for (let i = 0; i < this.state.lives; i++) {
-                    livesContainer.innerHTML += '❤️';
-                }
-            }
-
-            showQuestion(brick) {
-                this.state.questionActive = true;
-                this.state.currentBrick = brick;
-                this.state.currentQuestion = brick.question;
-
-                const popup = document.getElementById('question-popup');
-                document.getElementById('question-sentence').textContent = brick.question.sentence;
-                document.getElementById('question-instruction').textContent = brick.question.question;
-                document.getElementById('feedback').textContent = '';
-
-                const choicesContainer = document.getElementById('choices-container');
-                choicesContainer.innerHTML = '';
-
-                brick.question.choices.forEach((choice, index) => {
-                    const btn = document.createElement('button');
-                    btn.className = 'choice-btn';
-                    btn.textContent = choice;
-                    btn.onclick = () => this.handleAnswer(index);
-                    choicesContainer.appendChild(btn);
-                });
-
-                popup.style.display = 'block';
-            }
-
-            handleAnswer(choiceIndex) {
-                const question = this.state.currentQuestion;
-                const popup = document.getElementById('question-popup');
-                const buttons = popup.querySelectorAll('.choice-btn');
-                const feedback = document.getElementById('feedback');
-
-                buttons.forEach(btn => btn.disabled = true);
-
-                if (choiceIndex === question.correct) {
-                    buttons[choiceIndex].classList.add('correct');
-                    feedback.textContent = '✅ Correct! Brick destroyed!';
-                    feedback.style.color = 'var(--success)';
-                    
-                    this.state.combo++;
-                    this.state.maxCombo = Math.max(this.state.maxCombo, this.state.combo);
-                    const points = 100 * (1 + this.state.combo * 0.1);
-                    this.state.score += Math.floor(points);
-                    
-                    this.createParticles(this.state.currentBrick.x + this.state.currentBrick.width/2, 
-                                       this.state.currentBrick.y + this.state.currentBrick.height/2, 
-                                       this.state.currentBrick.color);
-                    
-                    if (this.state.combo >= 3) {
-                        this.showComboText(this.state.combo);
-                    }
-
-                    setTimeout(() => {
-                        this.state.currentBrick.alive = false;
-                        popup.style.display = 'none';
-                        this.state.questionActive = false;
-                        this.entities.ball.dx = 0;
-                        this.entities.ball.dy = 0;
-                        this.entities.ball.x = this.state.currentBrick.x + this.state.currentBrick.width / 2;
-                        this.entities.ball.y = this.state.currentBrick.y + this.state.currentBrick.height;
-                        this.updateHUD();
-                        this.checkLevelComplete();
-                    }, 1000);
-                } else {
-                    buttons[choiceIndex].classList.add('wrong');
-                    buttons[question.correct].classList.add('correct');
-                    feedback.textContent = `❌ Wrong! Correct answer: ${question.choices[question.correct]}`;
-                    feedback.style.color = 'var(--danger)';
-                    
-                    this.state.combo = 0;
-                    this.state.lives--;
-                    
-                    this.container.classList.add('shake');
-                    setTimeout(() => this.container.classList.remove('shake'), 500);
-
-                    setTimeout(() => {
-                        popup.style.display = 'none';
-                        this.state.questionActive = false;
-                        this.updateHUD();
-                        
-                        if (this.state.lives <= 0) {
-                            this.gameOver();
-                        } else {
-                            this.entities.ball.dx = 0;
-                            this.entities.ball.dy = 0;
-                            this.entities.ball.x = this.canvas.width / 2;
-                            this.entities.ball.y = this.entities.paddle.y - CONFIG.BALL_RADIUS - 2;
-                        }
-                    }, 2000);
-                }
-            }
-
-            showComboText(combo) {
-                const text = document.createElement('div');
-                text.className = 'combo-text';
-                text.textContent = `🔥 x${combo} COMBO!`;
-                text.style.left = '50%';
-                text.style.top = '40%';
-                text.style.transform = 'translate(-50%, -50%)';
-                this.container.appendChild(text);
-                setTimeout(() => text.remove(), 1000);
-            }
-
-            checkLevelComplete() {
-                const aliveBricks = this.entities.bricks.filter(b => b.alive);
-                if (aliveBricks.length === 0) {
-                    setTimeout(() => {
-                        this.showLevelComplete();
-                    }, 500);
-                }
-            }
-
-            showLevelComplete() {
-                this.state.playing = false;
-                const screen = document.getElementById('level-complete-screen');
-                document.getElementById('level-complete-title').textContent = `Level ${this.state.level} Complete!`;
-                document.getElementById('level-complete-score').textContent = `Score: ${this.state.score}`;
-                screen.style.display = 'flex';
-                
-                this.showLevelUpText();
-            }
-
-            showLevelUpText() {
-                const text = document.createElement('div');
-                text.className = 'level-up-text';
-                text.textContent = `LEVEL ${this.state.level} COMPLETE!`;
-                text.style.left = '50%';
-                text.style.top = '50%';
-                text.style.transform = 'translate(-50%, -50%)';
-                this.container.appendChild(text);
-                setTimeout(() => text.remove(), 2000);
-            }
-
-            nextLevel() {
-                if (this.state.level < 5) {
-                    this.state.level++;
-                    this.hideAllOverlays();
-                    this.startLevel();
-                    this.state.playing = true;
-                    this.gameLoop();
-                } else {
-                    this.gameWin();
-                }
-            }
-
-            gameOver() {
-                this.state.playing = false;
-                if (this.state.score > this.highScore) {
-                    this.highScore = this.state.score;
-                    localStorage.setItem('voiceShiftersHighScore', this.highScore);
-                }
-                
-                document.getElementById('final-score').textContent = `Final Score: ${this.state.score}`;
-                document.getElementById('high-score').textContent = `High Score: ${this.highScore}`;
-                document.getElementById('game-over-screen').style.display = 'flex';
-            }
-
-            gameWin() {
-                this.state.playing = false;
-                if (this.state.score > this.highScore) {
-                    this.highScore = this.state.score;
-                    localStorage.setItem('voiceShiftersHighScore', this.highScore);
-                }
-                
-                document.getElementById('final-score').textContent = `Final Score: ${this.state.score}`;
-                document.getElementById('high-score').textContent = `High Score: ${this.highScore} 🏆`;
-                document.getElementById('game-over-screen').querySelector('h1').textContent = 'You Win!';
-                document.getElementById('game-over-screen').style.display = 'flex';
-            }
-
-            createParticles(x, y, color) {
-                for (let i = 0; i < 15; i++) {
-                    this.entities.particles.push({
-                        x: x,
-                        y: y,
-                        dx: (Math.random() - 0.5) * 8,
-                        dy: (Math.random() - 0.5) * 8,
-                        radius: Math.random() * 4 + 2,
-                        color: color,
-                        life: 1,
-                        decay: 0.02 + Math.random() * 0.03
-                    });
-                }
-            }
-
-            update() {
-                if (!this.state.playing || this.state.paused || this.state.questionActive) return;
-
-                // Ball movement
-                if (this.entities.ball.dx !== 0 || this.entities.ball.dy !== 0) {
-                    this.entities.ball.x += this.entities.ball.dx;
-                    this.entities.ball.y += this.entities.ball.dy;
-
-                    // Wall collisions
-                    if (this.entities.ball.x - this.entities.ball.radius <= 0 || 
-                        this.entities.ball.x + this.entities.ball.radius >= this.canvas.width) {
-                        this.entities.ball.dx *= -1;
-                    }
-                    if (this.entities.ball.y - this.entities.ball.radius <= 0) {
-                        this.entities.ball.dy *= -1;
-                    }
-
-                    // Paddle collision
-                    const paddle = this.entities.paddle;
-                    const ball = this.entities.ball;
-                    if (ball.y + ball.radius >= paddle.y && 
-                        ball.y + ball.radius <= paddle.y + paddle.height &&
-                        ball.x >= paddle.x && 
-                        ball.x <= paddle.x + paddle.width) {
-                        
-                        const hitPos = (ball.x - paddle.x) / paddle.width;
-                        const angle = (hitPos - 0.5) * Math.PI / 2.5;
-                        ball.dx = Math.sin(angle) * ball.speed;
-                        ball.dy = -Math.cos(angle) * ball.speed;
-                    }
-
-                    // Brick collisions
-                    this.entities.bricks.forEach(brick => {
-                        if (!brick.alive) return;
-
-                        if (ball.x + ball.radius > brick.x && 
-                            ball.x - ball.radius < brick.x + brick.width &&
-                            ball.y + ball.radius > brick.y && 
-                            ball.y - ball.radius < brick.y + brick.height) {
-                            
-                            // Determine collision side
-                            const overlapLeft = (ball.x + ball.radius) - brick.x;
-                            const overlapRight = (brick.x + brick.width) - (ball.x - ball.radius);
-                            const overlapTop = (ball.y + ball.radius) - brick.y;
-                            const overlapBottom = (brick.y + brick.height) - (ball.y - ball.radius);
-
-                            const minOverlap = Math.min(overlapLeft, overlapRight, overlapTop, overlapBottom);
-
-                            if (minOverlap === overlapLeft || minOverlap === overlapRight) {
-                                ball.dx *= -1;
-                            } else {
-                                ball.dy *= -1;
-                            }
-
-                            brick.hits++;
-                            if (brick.hits >= brick.maxHits) {
-                                this.showQuestion(brick);
-                            }
-                        }
-                    });
-
-                    // Ball out
-                    if (this.entities.ball.y > this.canvas.height) {
-                        this.state.lives--;
-                        this.state.combo = 0;
-                        this.updateHUD();
-                        
-                        if (this.state.lives <= 0) {
-                            this.gameOver();
-                        } else {
-                            this.entities.ball.x = this.canvas.width / 2;
-                            this.entities.ball.y = this.entities.paddle.y - CONFIG.BALL_RADIUS - 2;
-                            this.entities.ball.dx = 0;
-                            this.entities.ball.dy = 0;
-                        }
-                    }
-                }
-
-                // Particles
-                this.entities.particles = this.entities.particles.filter(p => {
-                    p.x += p.dx;
-                    p.y += p.dy;
-                    p.dy += 0.2;
-                    p.life -= p.decay;
-                    return p.life > 0;
-                });
-            }
-
-            draw() {
-                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-                // Draw bricks
-                this.entities.bricks.forEach(brick => {
-                    if (!brick.alive) return;
-                    
-                    this.ctx.fillStyle = brick.color;
-                    this.ctx.beginPath();
-                    this.ctx.roundRect(brick.x, brick.y, brick.width, brick.height, 8);
-                    this.ctx.fill();
-
-                    // Glossy effect
-                    const gradient = this.ctx.createLinearGradient(brick.x, brick.y, brick.x, brick.y + brick.height);
-                    gradient.addColorStop(0, 'rgba(255,255,255,0.3)');
-                    gradient.addColorStop(0.5, 'rgba(255,255,255,0)');
-                    gradient.addColorStop(1, 'rgba(0,0,0,0.2)');
-                    this.ctx.fillStyle = gradient;
-                    this.ctx.beginPath();
-                    this.ctx.roundRect(brick.x, brick.y, brick.width, brick.height, 8);
-                    this.ctx.fill();
-
-                    // Text
-                    this.ctx.fillStyle = 'white';
-                    this.ctx.font = 'bold 12px sans-serif';
-                    this.ctx.textAlign = 'center';
-                    this.ctx.fillText(`Q${this.entities.bricks.indexOf(brick) + 1}`, brick.x + brick.width/2, brick.y + brick.height/2 + 4);
-                });
-
-                // Draw paddle
-                const paddle = this.entities.paddle;
-                const paddleGradient = this.ctx.createLinearGradient(paddle.x, paddle.y, paddle.x, paddle.y + paddle.height);
-                paddleGradient.addColorStop(0, CONFIG.COLORS.paddle);
-                paddleGradient.addColorStop(1, '#0088aa');
-                this.ctx.fillStyle = paddleGradient;
-                this.ctx.beginPath();
-                this.ctx.roundRect(paddle.x, paddle.y, paddle.width, paddle.height, 8);
-                this.ctx.fill();
-
-                // Paddle glow
-                this.ctx.shadowColor = CONFIG.COLORS.paddle;
-                this.ctx.shadowBlur = 20;
-                this.ctx.fill();
-                this.ctx.shadowBlur = 0;
-
-                // Draw ball
-                const ball = this.entities.ball;
-                this.ctx.fillStyle = CONFIG.COLORS.ball;
-                this.ctx.beginPath();
-                this.ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-                this.ctx.fill();
-
-                // Ball glow
-                this.ctx.shadowColor = CONFIG.COLORS.ball;
-                this.ctx.shadowBlur = 15;
-                this.ctx.fill();
-                this.ctx.shadowBlur = 0;
-
-                // Draw particles
-                this.entities.particles.forEach(p => {
-                    this.ctx.globalAlpha = p.life;
-                    this.ctx.fillStyle = p.color;
-                    this.ctx.beginPath();
-                    this.ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                    this.ctx.fill();
-                });
-                this.ctx.globalAlpha = 1;
-            }
-
-            gameLoop() {
-                if (!this.state.playing) return;
-                
-                this.update();
-                this.draw();
-                
-                requestAnimationFrame(() => this.gameLoop());
-            }
+  function startTimerForCurrent() {
+    if(timerInterval) stopTimer();
+    if(freezeActive) return;
+    timerInterval = setInterval(() => {
+      if(!canSubmit) return;
+      if(timerSeconds <= 1) {
+        // time's up
+        stopTimer();
+        if(canSubmit) {
+          canSubmit = false;
+          messageArea.innerHTML = '⏰ Time is up! ❌ No points. Moving to next question.';
+          handleIncorrect("Time's up!");
+          setTimeout(() => loadNextQuestion(), 1500);
         }
+      } else {
+        timerSeconds--;
+        updateTimerDisplay();
+      }
+    }, 1000);
+  }
 
-        // Initialize game
-        const game = new VoiceShiftersGame();
-    </script>
+  function normalizeAnswer(str) {
+    return str.trim().toLowerCase().replace(/[^\w\s']/g, '').replace(/\s+/g, ' ').trim();
+  }
+
+  function addPoints(points) {
+    let finalPoints = points;
+    if(boostDoubleRemaining > 0) {
+      finalPoints = points * 2;
+      messageArea.innerHTML += ` 🔥 DOUBLE POINTS! +${finalPoints}`;
+      boostDoubleRemaining--;
+      if(boostDoubleRemaining === 0) {
+        messageArea.innerHTML += `<br>2x Boost ended.`;
+        boostDoubleBtn.classList.remove('boost-active');
+      }
+    }
+    score += finalPoints;
+    scoreDisplay.innerText = score;
+    if(score > highScore) {
+      highScore = score;
+      highScoreSpan.innerText = highScore;
+      localStorage.setItem('voiceHighScore', highScore);
+    }
+    // unlock boosts
+    while(unlocksGranted < boostUnlockThresholds.length && score >= boostUnlockThresholds[unlocksGranted]) {
+      unlocksGranted++;
+      messageArea.innerHTML += `<br>🎁 NEW BOOST UNLOCKED at ${boostUnlockThresholds[unlocksGranted-1]} points!`;
+      updateBoostButtonsUI();
+    }
+    updateBoostButtonsUI();
+  }
+
+  function updateBoostButtonsUI() {
+    boostDoubleBtn.innerText = `⚡ 2x Pts (${boostDoubleUsesLeft})`;
+    boostFreezeBtn.innerText = `❄️ Freeze (${boostFreezeUses})`;
+    boostSkipBtn.innerText = `⏩ Skip (${boostSkipUses})`;
+    boostHintBtn.innerText = `💡 Hint (${boostHintUses})`;
+    let unlocked = (unlocksGranted >= 3);
+    if(!unlocked && score < 500) {
+      boostDoubleBtn.classList.add('disabled-boost');
+      boostFreezeBtn.classList.add('disabled-boost');
+      boostSkipBtn.classList.add('disabled-boost');
+      boostHintBtn.classList.add('disabled-boost');
+    } else {
+      boostDoubleBtn.classList.remove('disabled-boost');
+      boostFreezeBtn.classList.remove('disabled-boost');
+      boostSkipBtn.classList.remove('disabled-boost');
+      boostHintBtn.classList.remove('disabled-boost');
+    }
+  }
+
+  function checkAnswer() {
+    if(!canSubmit) return;
+    let userAnswer = normalizeAnswer(answerInput.value);
+    let correctRaw = currentQuestionObj.correct;
+    let expectedNorm = normalizeAnswer(correctRaw);
+    let isCorrect = false;
+    // for level 1 identify, compare active/passive
+    if(levelData[currentLevel].type === 'identify') {
+      if(userAnswer === 'active' || userAnswer === 'passive') {
+        isCorrect = (userAnswer === expectedNorm);
+      } else isCorrect = false;
+    } else {
+      isCorrect = (userAnswer === expectedNorm);
+    }
+    if(isCorrect) {
+      // correct answer
+      stopTimer();
+      let timeBonus = timerSeconds * 2;
+      let basePoints = 100;
+      let totalEarn = basePoints + timeBonus;
+      if(combo >= 2) totalEarn += 50;
+      addPoints(totalEarn);
+      combo++;
+      messageArea.innerHTML = `✅ Great! +${totalEarn} pts (${basePoints}+${timeBonus} time)${combo>=3 ? ' +50 COMBO!' : ''}`;
+      answerInput.value = '';
+      // check level completion
+      if(currentQIndex + 1 >= questionsList.length) {
+        // level complete
+        addPoints(500);
+        messageArea.innerHTML += `<br>🏆 LEVEL ${currentLevel} COMPLETE! +500 bonus! 🎉`;
+        confettiEffect();
+        if(currentLevel === 5) {
+          messageArea.innerHTML += `<br>🎉 YOU WON! Final score: ${score}`;
+          canSubmit = false;
+          stopTimer();
+          return;
+        } else {
+          currentLevel++;
+          currentQIndex = 0;
+          if(currentLevel === 5) {
+            levelData[5].questions = buildMixedLevel();
+            questionsList = [...levelData[5].questions];
+          } else {
+            questionsList = [...levelData[currentLevel].questions];
+          }
+          currentQuestionObj = questionsList[0];
+          updateUIForLevel();
+          resetTimerAndContinue();
+          canSubmit = true;
+          startTimerForCurrent();
+          updateSentenceAndPrompt();
+          return;
+        }
+      } else {
+        currentQIndex++;
+        currentQuestionObj = questionsList[currentQIndex];
+        resetTimerAndContinue();
+        canSubmit = true;
+        startTimerForCurrent();
+        updateSentenceAndPrompt();
+      }
+    } else {
+      handleIncorrect(`Wrong. Correct: "${correctRaw}"`);
+    }
+  }
+
+  function handleIncorrect(errorMsg) {
+    stopTimer();
+    combo = 0;
+    messageArea.innerHTML = `❌ ${errorMsg}`;
+    canSubmit = false;
+    setTimeout(() => {
+      if(currentQIndex + 1 >= questionsList.length && currentLevel === 5) {
+        messageArea.innerHTML = `Game over. Final score: ${score}`;
+        return;
+      }
+      if(currentQIndex + 1 >= questionsList.length && currentLevel < 5) {
+        currentLevel++;
+        currentQIndex = 0;
+        if(currentLevel === 5) levelData[5].questions = buildMixedLevel();
+        questionsList = (currentLevel===5) ? [...levelData[5].questions] : [...levelData[currentLevel].questions];
+        currentQuestionObj = questionsList[0];
+        updateUIForLevel();
+        resetTimerAndContinue();
+        canSubmit = true;
+        startTimerForCurrent();
+        updateSentenceAndPrompt();
+      } else {
+        currentQIndex++;
+        if(currentQIndex < questionsList.length) {
+          currentQuestionObj = questionsList[currentQIndex];
+          resetTimerAndContinue();
+          canSubmit = true;
+          startTimerForCurrent();
+          updateSentenceAndPrompt();
+        } else {
+          // level done but not handled above
+          if(currentLevel === 5) return;
+          currentLevel++;
+          questionsList = [...levelData[currentLevel].questions];
+          currentQuestionObj = questionsList[0];
+          currentQIndex=0;
+          updateUIForLevel();
+          resetTimerAndContinue();
+          canSubmit=true;
+          startTimerForCurrent();
+          updateSentenceAndPrompt();
+        }
+      }
+    }, 1500);
+  }
+
+  function resetTimerAndContinue() {
+    stopTimer();
+    if(currentLevel === 5) timerSeconds = 15;
+    else timerSeconds = 20;
+    updateTimerDisplay();
+  }
+
+  function updateSentenceAndPrompt() {
+    sentenceText.innerText = currentQuestionObj.sentence;
+    if(levelData[currentLevel].type === 'identify') {
+      questionPrompt.innerText = 'Identify: Type "active" or "passive"';
+    } else {
+      questionPrompt.innerText = 'Rewrite in PASSIVE voice (full sentence):';
+    }
+    answerInput.value = '';
+    answerInput.focus();
+    // difficulty adjustments based on streaks: not required but simple reset
+  }
+
+  function confettiEffect() {
+    const canvas = document.createElement('canvas');
+    canvas.style.position = 'fixed';
+    canvas.style.top = '0';
+    canvas.style.left = '0';
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+    canvas.style.pointerEvents = 'none';
+    canvas.style.zIndex = '9999';
+    document.body.appendChild(canvas);
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    let particles = [];
+    for(let i=0;i<120;i++) {
+      particles.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, vx:(Math.random()-0.5)*5, vy:Math.random()*3+2, size:Math.random()*5+3, color:`hsl(${Math.random()*360}, 70%, 60%)`});
+    }
+    let anim = setInterval(()=>{
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      let allDead=true;
+      particles.forEach(p=>{
+        p.x+=p.vx; p.y+=p.vy;
+        if(p.y<canvas.height+50) allDead=false;
+        ctx.fillStyle=p.color;
+        ctx.fillRect(p.x,p.y,p.size,p.size);
+      });
+      if(allDead) { clearInterval(anim); document.body.removeChild(canvas); }
+    },30);
+    setTimeout(()=>{ if(document.body.contains(canvas)) { clearInterval(anim); document.body.removeChild(canvas); } }, 2000);
+  }
+
+  // Boost handlers
+  boostDoubleBtn.addEventListener('click', () => {
+    if(boostDoubleUsesLeft<=0 || score<500 && unlocksGranted<1) { messageArea.innerHTML='🔒 Unlock at 500 pts'; return; }
+    boostDoubleUsesLeft--;
+    boostDoubleRemaining = 2;
+    boostDoubleBtn.classList.add('boost-active');
+    messageArea.innerHTML = '⚡ 2x Points active for next 2 questions!';
+    updateBoostButtonsUI();
+  });
+  boostFreezeBtn.addEventListener('click', () => {
+    if(boostFreezeUses<=0 || (score<500 && unlocksGranted<1)) { messageArea.innerHTML='🔒 Unlock at 500 pts'; return; }
+    boostFreezeUses--;
+    freezeActive = true;
+    stopTimer();
+    messageArea.innerHTML = '❄️ Timer frozen for 5 seconds!';
+    setTimeout(() => {
+      freezeActive = false;
+      startTimerForCurrent();
+      messageArea.innerHTML = '❄️ Freeze ended. Timer resumes.';
+    }, 5000);
+    updateBoostButtonsUI();
+  });
+  boostSkipBtn.addEventListener('click', () => {
+    if(boostSkipUses<=0 || (score<500 && unlocksGranted<1)) { messageArea.innerHTML='🔒 Unlock at 1000 pts'; return; }
+    boostSkipUses--;
+    stopTimer();
+    messageArea.innerHTML = '⏩ Skipped! Moving to next question.';
+    canSubmit = false;
+    setTimeout(() => {
+      if(currentQIndex+1 >= questionsList.length && currentLevel===5) { messageArea.innerHTML='Game finished.'; return; }
+      if(currentQIndex+1 >= questionsList.length && currentLevel<5) {
+        currentLevel++; currentQIndex=0;
+        questionsList = (currentLevel===5) ? [...levelData[5].questions] : [...levelData[currentLevel].questions];
+        currentQuestionObj = questionsList[0];
+        updateUIForLevel();
+      } else {
+        currentQIndex++;
+        currentQuestionObj = questionsList[currentQIndex];
+      }
+      updateSentenceAndPrompt();
+      resetTimerAndContinue();
+      canSubmit = true;
+      startTimerForCurrent();
+    }, 200);
+    updateBoostButtonsUI();
+  });
+  boostHintBtn.addEventListener('click', () => {
+    if(boostHintUses<=0 || (score<500 && unlocksGranted<1)) { messageArea.innerHTML='🔒 Unlock at 2000 pts'; return; }
+    boostHintUses--;
+    let words = currentQuestionObj.sentence.split(' ');
+    let hintMsg = `💡 Hint: The subject is often before main verb. In passive: object becomes subject.`;
+    messageArea.innerHTML = hintMsg;
+    setTimeout(()=>{ if(messageArea.innerHTML === hintMsg) messageArea.innerHTML = '✨ Use the hint wisely!'; }, 4000);
+    updateBoostButtonsUI();
+  });
+
+  function resetGame() {
+    stopTimer();
+    currentLevel = 1;
+    currentQIndex = 0;
+    questionsList = [...levelData[1].questions];
+    currentQuestionObj = questionsList[0];
+    score = 0;
+    combo = 0;
+    boostDoubleRemaining = 0;
+    boostDoubleUsesLeft = 3;
+    boostFreezeUses = 3;
+    boostSkipUses = 3;
+    boostHintUses = 3;
+    unlocksGranted = 0;
+    freezeActive = false;
+    canSubmit = true;
+    timerSeconds = 20;
+    updateUIForLevel();
+    updateTimerDisplay();
+    scoreDisplay.innerText = '0';
+    updateSentenceAndPrompt();
+    updateBoostButtonsUI();
+    messageArea.innerHTML = '🔄 Game reset. Start answering!';
+    startTimerForCurrent();
+  }
+
+  document.getElementById('resetGameBtn').addEventListener('click', resetGame);
+  submitBtn.addEventListener('click', () => { if(canSubmit) checkAnswer(); });
+  answerInput.addEventListener('keypress', (e) => { if(e.key === 'Enter' && canSubmit) checkAnswer(); });
+
+  const modal = document.getElementById('grammarModal');
+  document.getElementById('showRulesBtn').addEventListener('click', () => modal.classList.add('active'));
+  document.getElementById('closeModalBtn').addEventListener('click', () => modal.classList.remove('active'));
+  modal.addEventListener('click', (e) => { if(e.target === modal) modal.classList.remove('active'); });
+
+  // init
+  updateUIForLevel();
+  updateSentenceAndPrompt();
+  updateBoostButtonsUI();
+  startTimerForCurrent();
+</script>
 </body>
 </html>
