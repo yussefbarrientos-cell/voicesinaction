@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Voice Shifters | Active & Passive Rescue</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', 'Inter', 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      min-height: 100vh;
+      padding: 1rem;
+      color: #f1f5f9;
+    }
+
+    .game-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(2px);
+      border-radius: 2rem;
+      padding: 1.5rem;
+      box-shadow: 0 25px 45px rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    /* Header */
+    .game-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid rgba(245,158,11,0.5);
+      margin-bottom: 1.5rem;
+    }
+    .game-title h1 {
+      font-size: 1.5rem;
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .game-title p {
+      font-size: 0.75rem;
+      color: #94a3b8;
+    }
+    .score-panel {
+      text-align: right;
+      background: #0f172a;
+      padding: 0.5rem 1rem;
+      border-radius: 2rem;
+    }
+    .score-panel div {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #fbbf24;
+    }
+    .score-panel small {
+      font-size: 0.7rem;
+      color: #94a3b8;
+    }
+
+    /* Level & Timer */
+    .info-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      background: #0f172a;
+      padding: 0.8rem 1.2rem;
+      border-radius: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .level-badge {
+      background: #f59e0b;
+      color: #0f172a;
+      padding: 0.3rem 0.8rem;
+      border-radius: 2rem;
+      font-weight: bold;
+      font-size: 0.85rem;
+    }
+    .timer-box {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      flex: 1;
+      max-width: 250px;
+    }
+    .timer-box span {
+      font-family: monospace;
+      font-size: 1.4rem;
+      font-weight: bold;
+      background: #00000066;
+      padding: 0.2rem 0.6rem;
+      border-radius: 0.5rem;
+    }
+    .timer-bar {
+      flex: 1;
+      height: 8px;
+      background: #334155;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .timer-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #22c55e, #fbbf24);
+      transition: width 0.1s linear;
+    }
+
+    /* Main Card */
+    .question-card {
+      background: #1e293b;
+      border-radius: 1.5rem;
+      padding: 1.8rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
+    .sentence {
+      font-size: 1.3rem;
+      font-weight: 500;
+      background: #0f172a;
+      padding: 1rem;
+      border-radius: 1rem;
+      text-align: center;
+      margin-bottom: 1rem;
+      border-left: 4px solid #f59e0b;
+    }
+    .question-prompt {
+      color: #94a3b8;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+    .answer-area {
+      display: flex;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+    .answer-input {
+      flex: 3;
+      padding: 0.9rem;
+      font-size: 1rem;
+      border: 2px solid #334155;
+      background: #0f172a;
+      color: #f1f5f9;
+      border-radius: 1rem;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .answer-input:focus {
+      border-color: #f59e0b;
+    }
+    .submit-btn {
+      flex: 1;
+      background: #f59e0b;
+      color: #0f172a;
+      border: none;
+      padding: 0.9rem 1.2rem;
+      font-weight: bold;
+      border-radius: 1rem;
+      cursor: pointer;
+      transition: transform 0.1s, background 0.2s;
+    }
+    .submit-btn:active {
+      transform: scale(0.97);
+    }
+    .submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* Boosts */
+    .boosts {
+      display: flex;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin: 1.5rem 0;
+    }
+    .boost-btn {
+      background: #334155;
+      border: none;
+      padding: 0.6rem 1rem;
+      border-radius: 2rem;
+      color: #f1f5f9;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .boost-btn:active {
+      transform: scale(0.96);
+    }
+    .boost-btn.disabled-boost {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .boost-active {
+      background: #f59e0b;
+      color: #0f172a;
+      box-shadow: 0 0 8px #f59e0b;
+    }
+
+    .message-area {
+      background: #0f172a;
+      padding: 0.8rem;
+      border-radius: 1rem;
+      text-align: center;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+      min-height: 65px;
+    }
+
+    .reset-btn {
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 0.7rem 1.2rem;
+      border-radius: 2rem;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 0.5rem;
+    }
+
+    .highscore {
+      text-align: center;
+      margin-top: 1rem;
+      font-size: 0.8rem;
+      color: #94a3b8;
+    }
+
+    /* Reference chart modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 1rem;
+    }
+    .modal.active {
+      display: flex;
+    }
+    .modal-content {
+      background: #1e293b;
+      max-width: 95%;
+      width: 700px;
+      max-height: 85vh;
+      overflow-y: auto;
+      border-radius: 1.5rem;
+      padding: 1.5rem;
+    }
+    .modal-content table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.75rem;
+    }
+    .modal-content th, .modal-content td {
+      border: 1px solid #334155;
+      padding: 0.5rem;
+      text-align: left;
+    }
+    .close-modal {
+      float: right;
+      background: #f59e0b;
+      border: none;
+      padding: 0.3rem 0.8rem;
+      border-radius: 1rem;
+      cursor: pointer;
+      margin-bottom: 1rem;
+    }
+
+    @media (max-width: 550px) {
+      .game-container { padding: 1rem; }
+      .sentence { font-size: 1rem; }
+      .answer-area { flex-direction: column; }
+      .submit-btn { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+<div class="game-container">
+  <div class="game-header">
+    <div class="game-title">
+      <h1>🎙️ Voice Shifters</h1>
+      <p>Active ↔ Passive Rescue</p>
+    </div>
+    <div class="score-panel">
+      <div id="scoreDisplay">0</div>
+      <small>POINTS</small>
+    </div>
+  </div>
+
+  <div class="info-bar">
+    <div class="level-badge" id="levelBadge">Level 1 / 5</div>
+    <div class="timer-box">
+      <span id="timerSeconds">20</span>
+      <div class="timer-bar"><div class="timer-fill" id="timerFill" style="width:100%"></div></div>
+    </div>
+  </div>
+
+  <div class="question-card">
+    <div class="sentence" id="sentenceText">The window was broken by the boy.</div>
+    <div class="question-prompt" id="questionPrompt">Identify: Active or Passive?</div>
+    <div class="answer-area">
+      <input type="text" id="answerInput" class="answer-input" placeholder="Type 'active', 'passive' or full sentence..." autocomplete="off">
+      <button id="submitBtn" class="submit-btn">✓ Submit</button>
+    </div>
+  </div>
+
+  <div class="boosts" id="boostsArea">
+    <button class="boost-btn" data-boost="double" id="boostDouble">⚡ 2x Pts (3)</button>
+    <button class="boost-btn" data-boost="freeze" id="boostFreeze">❄️ Freeze (3)</button>
+    <button class="boost-btn" data-boost="skip" id="boostSkip">⏩ Skip (3)</button>
+    <button class="boost-btn" data-boost="hint" id="boostHint">💡 Hint (3)</button>
+  </div>
+
+  <div class="message-area" id="messageArea">✨ Click START? Timer begins with first submit. Good luck!</div>
+  <button id="resetGameBtn" class="reset-btn">🔄 Reset Game</button>
+  <div class="highscore">🏆 High Score: <span id="highScoreSpan">0</span></div>
+  <div style="text-align:center; margin-top:0.8rem;"><button id="showRulesBtn" style="background:none; border:1px solid #f59e0b; color:#f59e0b; padding:0.3rem 1rem; border-radius:2rem;">📖 Grammar Chart</button></div>
+</div>
+
+<div id="grammarModal" class="modal">
+  <div class="modal-content">
+    <button class="close-modal" id="closeModalBtn">✖ Close</button>
+    <h3>Active ↔ Passive Reference</h3>
+    <table>
+      <thead><tr><th>Tense</th><th>Active</th><th>Passive</th></tr></thead>
+      <tbody>
+        <tr><td>Simple Present</td><td>The chef cooks the meal.</td><td>The meal is cooked by the chef.</td></tr>
+        <tr><td>Present Cont.</td><td>The chef is cooking the meal.</td><td>The meal is being cooked by the chef.</td></tr>
+        <tr><td>Simple Past</td><td>The chef cooked the meal.</td><td>The meal was cooked by the chef.</td></tr>
+        <tr><td>Past Cont.</td><td>The chef was cooking the meal.</td><td>The meal was being cooked by the chef.</td></tr>
+        <tr><td>Present Perfect</td><td>The chef has cooked the meal.</td><td>The meal has been cooked by the chef.</td></tr>
+        <tr><td>Future (will)</td><td>The chef will cook the meal.</td><td>The meal will be cooked by the chef.</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:0.8rem;">📌 Object becomes subject → changes verb agreement.<br>📌 "by + agent" is optional.</p>
+  </div>
+</div>
+
+<script>
+  // ---------- QUESTION BANK (FULL VARIETY: tenses, plurals, subjects) ----------
+  const levelData = {
+    1: { // Identify Active/Passive
+      type: 'identify',
+      questions: [
+        { sentence: "The window was broken by the boy.", correct: "passive" },
+        { sentence: "She writes a letter every morning.", correct: "active" },
+        { sentence: "The song is sung by the choir.", correct: "passive" },
+        { sentence: "They are eating fresh apples.", correct: "active" },
+        { sentence: "The delicious cake has been eaten by someone.", correct: "passive" }
+      ]
+    },
+    2: { // Singular → Plural passive
+      type: 'transform',
+      questions: [
+        { sentence: "The child finds the toy.", correct: "the toys are found by the child" },
+        { sentence: "The woman buys a red dress.", correct: "the dresses are bought by the woman" },
+        { sentence: "The artist paints a portrait.", correct: "the portraits are painted by the artist" },
+        { sentence: "The writer finishes a novel.", correct: "the novels are finished by the writer" },
+        { sentence: "The mechanic repairs the car.", correct: "the cars are repaired by the mechanic" }
+      ]
+    },
+    3: { // Tense change + passive
+      type: 'transform',
+      questions: [
+        { sentence: "The chef prepares dinner. (Active present → Passive past)", correct: "dinner was prepared by the chef" },
+        { sentence: "The team will win the match. (Active future → Passive present perfect)", correct: "the match has been won by the team" },
+        { sentence: "The storm destroyed the house. (Active past → Passive present)", correct: "the house is destroyed by the storm" },
+        { sentence: "The dog is chasing the cat. (Active present cont. → Passive past cont.)", correct: "the cat was being chased by the dog" },
+        { sentence: "They have finished the project. (Active perf. → Passive future)", correct: "the project will be finished by them" }
+      ]
+    },
+    4: { // No "by" agent
+      type: 'transform',
+      questions: [
+        { sentence: "Someone cleaned the room.", correct: "the room was cleaned" },
+        { sentence: "People speak Spanish here.", correct: "spanish is spoken here" },
+        { sentence: "Nobody saw the thief.", correct: "the thief was not seen" },
+        { sentence: "They will announce the winner tomorrow.", correct: "the winner will be announced" },
+        { sentence: "Someone has stolen my wallet.", correct: "my wallet has been stolen" }
+      ]
+    },
+    5: { // Mixed: randomly pick 10 from previous levels (avoid duplicates)
+      type: 'mixed',
+      questions: [] // filled at runtime
+    }
+  };
+
+  // Generate mixed level 5 from levels 1-4 (unique)
+  function buildMixedLevel() {
+    const allPrev = [];
+    for(let lvl=1; lvl<=4; lvl++) {
+      levelData[lvl].questions.forEach(q => {
+        allPrev.push({ sentence: q.sentence, correct: q.correct, type: levelData[lvl].type });
+      });
+    }
+    // shuffle and pick first 10 unique
+    for(let i=allPrev.length-1; i>0; i--) {
+      const j = Math.floor(Math.random()*(i+1));
+      [allPrev[i], allPrev[j]] = [allPrev[j], allPrev[i]];
+    }
+    return allPrev.slice(0,10);
+  }
+  levelData[5].questions = buildMixedLevel();
+
+  // Game state
+  let currentLevel = 1;
+  let currentQIndex = 0;
+  let questionsList = [...levelData[1].questions];
+  let currentQuestionObj = questionsList[0];
+  let score = 0;
+  let combo = 0;
+  let timerSeconds = 20;
+  let timerInterval = null;
+  let canSubmit = true;
+  let boostDoubleRemaining = 0;    // 0 = inactive, >0 active for that many questions
+  let boostDoubleUsesLeft = 3;
+  let boostFreezeUses = 3;
+  let boostSkipUses = 3;
+  let boostHintUses = 3;
+  let freezeActive = false;
+  let boostUnlockThresholds = [500, 1000, 2000];
+  let unlocksGranted = 0;
+  let highScore = localStorage.getItem('voiceHighScore') ? parseInt(localStorage.getItem('voiceHighScore')) : 0;
+
+  // DOM elements
+  const scoreDisplay = document.getElementById('scoreDisplay');
+  const levelBadge = document.getElementById('levelBadge');
+  const timerSecondsSpan = document.getElementById('timerSeconds');
+  const timerFill = document.getElementById('timerFill');
+  const sentenceText = document.getElementById('sentenceText');
+  const questionPrompt = document.getElementById('questionPrompt');
+  const answerInput = document.getElementById('answerInput');
+  const submitBtn = document.getElementById('submitBtn');
+  const messageArea = document.getElementById('messageArea');
+  const highScoreSpan = document.getElementById('highScoreSpan');
+  const boostDoubleBtn = document.getElementById('boostDouble');
+  const boostFreezeBtn = document.getElementById('boostFreeze');
+  const boostSkipBtn = document.getElementById('boostSkip');
+  const boostHintBtn = document.getElementById('boostHint');
+
+  highScoreSpan.innerText = highScore;
+
+  function updateUIForLevel() {
+    levelBadge.innerText = `Level ${currentLevel} / 5`;
+    if(currentLevel === 5) timerSeconds = 15;
+    else timerSeconds = 20;
+    updateTimerDisplay();
+    const levelType = levelData[currentLevel].type;
+    if(levelType === 'identify') {
+      questionPrompt.innerText = 'Identify: Type "active" or "passive"';
+    } else {
+      questionPrompt.innerText = 'Rewrite in PASSIVE voice (full sentence):';
+    }
+  }
+
+  function updateTimerDisplay() {
+    timerSecondsSpan.innerText = timerSeconds;
+    let maxTime = (currentLevel === 5) ? 15 : 20;
+    let percent = (timerSeconds / maxTime) * 100;
+    timerFill.style.width = `${Math.max(0, percent)}%`;
+  }
+
+  function stopTimer() {
+    if(timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+  }
+
+  function startTimerForCurrent() {
+    if(timerInterval) stopTimer();
+    if(freezeActive) return;
+    timerInterval = setInterval(() => {
+      if(!canSubmit) return;
+      if(timerSeconds <= 1) {
+        // time's up
+        stopTimer();
+        if(canSubmit) {
+          canSubmit = false;
+          messageArea.innerHTML = '⏰ Time is up! ❌ No points. Moving to next question.';
+          handleIncorrect("Time's up!");
+          setTimeout(() => loadNextQuestion(), 1500);
+        }
+      } else {
+        timerSeconds--;
+        updateTimerDisplay();
+      }
+    }, 1000);
+  }
+
+  function normalizeAnswer(str) {
+    return str.trim().toLowerCase().replace(/[^\w\s']/g, '').replace(/\s+/g, ' ').trim();
+  }
+
+  function addPoints(points) {
+    let finalPoints = points;
+    if(boostDoubleRemaining > 0) {
+      finalPoints = points * 2;
+      messageArea.innerHTML += ` 🔥 DOUBLE POINTS! +${finalPoints}`;
+      boostDoubleRemaining--;
+      if(boostDoubleRemaining === 0) {
+        messageArea.innerHTML += `<br>2x Boost ended.`;
+        boostDoubleBtn.classList.remove('boost-active');
+      }
+    }
+    score += finalPoints;
+    scoreDisplay.innerText = score;
+    if(score > highScore) {
+      highScore = score;
+      highScoreSpan.innerText = highScore;
+      localStorage.setItem('voiceHighScore', highScore);
+    }
+    // unlock boosts
+    while(unlocksGranted < boostUnlockThresholds.length && score >= boostUnlockThresholds[unlocksGranted]) {
+      unlocksGranted++;
+      messageArea.innerHTML += `<br>🎁 NEW BOOST UNLOCKED at ${boostUnlockThresholds[unlocksGranted-1]} points!`;
+      updateBoostButtonsUI();
+    }
+    updateBoostButtonsUI();
+  }
+
+  function updateBoostButtonsUI() {
+    boostDoubleBtn.innerText = `⚡ 2x Pts (${boostDoubleUsesLeft})`;
+    boostFreezeBtn.innerText = `❄️ Freeze (${boostFreezeUses})`;
+    boostSkipBtn.innerText = `⏩ Skip (${boostSkipUses})`;
+    boostHintBtn.innerText = `💡 Hint (${boostHintUses})`;
+    let unlocked = (unlocksGranted >= 3);
+    if(!unlocked && score < 500) {
+      boostDoubleBtn.classList.add('disabled-boost');
+      boostFreezeBtn.classList.add('disabled-boost');
+      boostSkipBtn.classList.add('disabled-boost');
+      boostHintBtn.classList.add('disabled-boost');
+    } else {
+      boostDoubleBtn.classList.remove('disabled-boost');
+      boostFreezeBtn.classList.remove('disabled-boost');
+      boostSkipBtn.classList.remove('disabled-boost');
+      boostHintBtn.classList.remove('disabled-boost');
+    }
+  }
+
+  function checkAnswer() {
+    if(!canSubmit) return;
+    let userAnswer = normalizeAnswer(answerInput.value);
+    let correctRaw = currentQuestionObj.correct;
+    let expectedNorm = normalizeAnswer(correctRaw);
+    let isCorrect = false;
+    // for level 1 identify, compare active/passive
+    if(levelData[currentLevel].type === 'identify') {
+      if(userAnswer === 'active' || userAnswer === 'passive') {
+        isCorrect = (userAnswer === expectedNorm);
+      } else isCorrect = false;
+    } else {
+      isCorrect = (userAnswer === expectedNorm);
+    }
+    if(isCorrect) {
+      // correct answer
+      stopTimer();
+      let timeBonus = timerSeconds * 2;
+      let basePoints = 100;
+      let totalEarn = basePoints + timeBonus;
+      if(combo >= 2) totalEarn += 50;
+      addPoints(totalEarn);
+      combo++;
+      messageArea.innerHTML = `✅ Great! +${totalEarn} pts (${basePoints}+${timeBonus} time)${combo>=3 ? ' +50 COMBO!' : ''}`;
+      answerInput.value = '';
+      // check level completion
+      if(currentQIndex + 1 >= questionsList.length) {
+        // level complete
+        addPoints(500);
+        messageArea.innerHTML += `<br>🏆 LEVEL ${currentLevel} COMPLETE! +500 bonus! 🎉`;
+        confettiEffect();
+        if(currentLevel === 5) {
+          messageArea.innerHTML += `<br>🎉 YOU WON! Final score: ${score}`;
+          canSubmit = false;
+          stopTimer();
+          return;
+        } else {
+          currentLevel++;
+          currentQIndex = 0;
+          if(currentLevel === 5) {
+            levelData[5].questions = buildMixedLevel();
+            questionsList = [...levelData[5].questions];
+          } else {
+            questionsList = [...levelData[currentLevel].questions];
+          }
+          currentQuestionObj = questionsList[0];
+          updateUIForLevel();
+          resetTimerAndContinue();
+          canSubmit = true;
+          startTimerForCurrent();
+          updateSentenceAndPrompt();
+          return;
+        }
+      } else {
+        currentQIndex++;
+        currentQuestionObj = questionsList[currentQIndex];
+        resetTimerAndContinue();
+        canSubmit = true;
+        startTimerForCurrent();
+        updateSentenceAndPrompt();
+      }
+    } else {
+      handleIncorrect(`Wrong. Correct: "${correctRaw}"`);
+    }
+  }
+
+  function handleIncorrect(errorMsg) {
+    stopTimer();
+    combo = 0;
+    messageArea.innerHTML = `❌ ${errorMsg}`;
+    canSubmit = false;
+    setTimeout(() => {
+      if(currentQIndex + 1 >= questionsList.length && currentLevel === 5) {
+        messageArea.innerHTML = `Game over. Final score: ${score}`;
+        return;
+      }
+      if(currentQIndex + 1 >= questionsList.length && currentLevel < 5) {
+        currentLevel++;
+        currentQIndex = 0;
+        if(currentLevel === 5) levelData[5].questions = buildMixedLevel();
+        questionsList = (currentLevel===5) ? [...levelData[5].questions] : [...levelData[currentLevel].questions];
+        currentQuestionObj = questionsList[0];
+        updateUIForLevel();
+        resetTimerAndContinue();
+        canSubmit = true;
+        startTimerForCurrent();
+        updateSentenceAndPrompt();
+      } else {
+        currentQIndex++;
+        if(currentQIndex < questionsList.length) {
+          currentQuestionObj = questionsList[currentQIndex];
+          resetTimerAndContinue();
+          canSubmit = true;
+          startTimerForCurrent();
+          updateSentenceAndPrompt();
+        } else {
+          // level done but not handled above
+          if(currentLevel === 5) return;
+          currentLevel++;
+          questionsList = [...levelData[currentLevel].questions];
+          currentQuestionObj = questionsList[0];
+          currentQIndex=0;
+          updateUIForLevel();
+          resetTimerAndContinue();
+          canSubmit=true;
+          startTimerForCurrent();
+          updateSentenceAndPrompt();
+        }
+      }
+    }, 1500);
+  }
+
+  function resetTimerAndContinue() {
+    stopTimer();
+    if(currentLevel === 5) timerSeconds = 15;
+    else timerSeconds = 20;
+    updateTimerDisplay();
+  }
+
+  function updateSentenceAndPrompt() {
+    sentenceText.innerText = currentQuestionObj.sentence;
+    if(levelData[currentLevel].type === 'identify') {
+      questionPrompt.innerText = 'Identify: Type "active" or "passive"';
+    } else {
+      questionPrompt.innerText = 'Rewrite in PASSIVE voice (full sentence):';
+    }
+    answerInput.value = '';
+    answerInput.focus();
+    // difficulty adjustments based on streaks: not required but simple reset
+  }
+
+  function confettiEffect() {
+    const canvas = document.createElement('canvas');
+    canvas.style.position = 'fixed';
+    canvas.style.top = '0';
+    canvas.style.left = '0';
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+    canvas.style.pointerEvents = 'none';
+    canvas.style.zIndex = '9999';
+    document.body.appendChild(canvas);
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    let particles = [];
+    for(let i=0;i<120;i++) {
+      particles.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, vx:(Math.random()-0.5)*5, vy:Math.random()*3+2, size:Math.random()*5+3, color:`hsl(${Math.random()*360}, 70%, 60%)`});
+    }
+    let anim = setInterval(()=>{
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      let allDead=true;
+      particles.forEach(p=>{
+        p.x+=p.vx; p.y+=p.vy;
+        if(p.y<canvas.height+50) allDead=false;
+        ctx.fillStyle=p.color;
+        ctx.fillRect(p.x,p.y,p.size,p.size);
+      });
+      if(allDead) { clearInterval(anim); document.body.removeChild(canvas); }
+    },30);
+    setTimeout(()=>{ if(document.body.contains(canvas)) { clearInterval(anim); document.body.removeChild(canvas); } }, 2000);
+  }
+
+  // Boost handlers
+  boostDoubleBtn.addEventListener('click', () => {
+    if(boostDoubleUsesLeft<=0 || score<500 && unlocksGranted<1) { messageArea.innerHTML='🔒 Unlock at 500 pts'; return; }
+    boostDoubleUsesLeft--;
+    boostDoubleRemaining = 2;
+    boostDoubleBtn.classList.add('boost-active');
+    messageArea.innerHTML = '⚡ 2x Points active for next 2 questions!';
+    updateBoostButtonsUI();
+  });
+  boostFreezeBtn.addEventListener('click', () => {
+    if(boostFreezeUses<=0 || (score<500 && unlocksGranted<1)) { messageArea.innerHTML='🔒 Unlock at 500 pts'; return; }
+    boostFreezeUses--;
+    freezeActive = true;
+    stopTimer();
+    messageArea.innerHTML = '❄️ Timer frozen for 5 seconds!';
+    setTimeout(() => {
+      freezeActive = false;
+      startTimerForCurrent();
+      messageArea.innerHTML = '❄️ Freeze ended. Timer resumes.';
+    }, 5000);
+    updateBoostButtonsUI();
+  });
+  boostSkipBtn.addEventListener('click', () => {
+    if(boostSkipUses<=0 || (score<500 && unlocksGranted<1)) { messageArea.innerHTML='🔒 Unlock at 1000 pts'; return; }
+    boostSkipUses--;
+    stopTimer();
+    messageArea.innerHTML = '⏩ Skipped! Moving to next question.';
+    canSubmit = false;
+    setTimeout(() => {
+      if(currentQIndex+1 >= questionsList.length && currentLevel===5) { messageArea.innerHTML='Game finished.'; return; }
+      if(currentQIndex+1 >= questionsList.length && currentLevel<5) {
+        currentLevel++; currentQIndex=0;
+        questionsList = (currentLevel===5) ? [...levelData[5].questions] : [...levelData[currentLevel].questions];
+        currentQuestionObj = questionsList[0];
+        updateUIForLevel();
+      } else {
+        currentQIndex++;
+        currentQuestionObj = questionsList[currentQIndex];
+      }
+      updateSentenceAndPrompt();
+      resetTimerAndContinue();
+      canSubmit = true;
+      startTimerForCurrent();
+    }, 200);
+    updateBoostButtonsUI();
+  });
+  boostHintBtn.addEventListener('click', () => {
+    if(boostHintUses<=0 || (score<500 && unlocksGranted<1)) { messageArea.innerHTML='🔒 Unlock at 2000 pts'; return; }
+    boostHintUses--;
+    let words = currentQuestionObj.sentence.split(' ');
+    let hintMsg = `💡 Hint: The subject is often before main verb. In passive: object becomes subject.`;
+    messageArea.innerHTML = hintMsg;
+    setTimeout(()=>{ if(messageArea.innerHTML === hintMsg) messageArea.innerHTML = '✨ Use the hint wisely!'; }, 4000);
+    updateBoostButtonsUI();
+  });
+
+  function resetGame() {
+    stopTimer();
+    currentLevel = 1;
+    currentQIndex = 0;
+    questionsList = [...levelData[1].questions];
+    currentQuestionObj = questionsList[0];
+    score = 0;
+    combo = 0;
+    boostDoubleRemaining = 0;
+    boostDoubleUsesLeft = 3;
+    boostFreezeUses = 3;
+    boostSkipUses = 3;
+    boostHintUses = 3;
+    unlocksGranted = 0;
+    freezeActive = false;
+    canSubmit = true;
+    timerSeconds = 20;
+    updateUIForLevel();
+    updateTimerDisplay();
+    scoreDisplay.innerText = '0';
+    updateSentenceAndPrompt();
+    updateBoostButtonsUI();
+    messageArea.innerHTML = '🔄 Game reset. Start answering!';
+    startTimerForCurrent();
+  }
+
+  document.getElementById('resetGameBtn').addEventListener('click', resetGame);
+  submitBtn.addEventListener('click', () => { if(canSubmit) checkAnswer(); });
+  answerInput.addEventListener('keypress', (e) => { if(e.key === 'Enter' && canSubmit) checkAnswer(); });
+
+  const modal = document.getElementById('grammarModal');
+  document.getElementById('showRulesBtn').addEventListener('click', () => modal.classList.add('active'));
+  document.getElementById('closeModalBtn').addEventListener('click', () => modal.classList.remove('active'));
+  modal.addEventListener('click', (e) => { if(e.target === modal) modal.classList.remove('active'); });
+
+  // init
+  updateUIForLevel();
+  updateSentenceAndPrompt();
+  updateBoostButtonsUI();
+  startTimerForCurrent();
+</script>
+</body>
+</html>
