@@ -2,794 +2,664 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>VOICE DEFENDER | Active vs Passive Arcade</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#002D62">
+  <title>Academia Europea | Voice Defender - Active & Passive Grammar Game</title>
+  <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Voice%20Defender%20-%20Academia%20Europea%22,%22short_name%22:%22VoiceDefender%22,%22start_url%22:%22/%22,%22display%22:%22standalone%22,%22background_color%22:%22%23002D62%22,%22theme_color%22:%22%23F2C620%22}">
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
     }
 
     body {
       min-height: 100vh;
-      background: radial-gradient(ellipse at top, #0f0c29, #302b63, #24243e);
+      background: linear-gradient(135deg, #002D62 0%, #001B3D 50%, #002D62 100%);
       font-family: 'Poppins', 'Segoe UI', system-ui, sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
       padding: 1rem;
-      overflow: auto;
       position: relative;
     }
 
+    /* Decorative background pattern */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: radial-gradient(rgba(242,198,32,0.08) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
     .game-container {
-      background: linear-gradient(180deg, rgba(15,12,41,0.8) 0%, rgba(36,36,62,0.9) 100%);
+      max-width: 1000px;
+      width: 100%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(240,244,248,0.98) 100%);
       border-radius: 2rem;
-      padding: 1rem;
-      box-shadow: 0 25px 45px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
-      backdrop-filter: blur(5px);
-      max-width: 1100px;
-      width: 100%;
+      padding: 1.5rem;
+      box-shadow: 0 25px 45px rgba(0,45,98,0.3);
+      border: 1px solid rgba(242,198,32,0.3);
+      position: relative;
+      z-index: 1;
     }
 
-    canvas {
-      display: block;
-      margin: 0 auto;
-      border-radius: 1rem;
-      box-shadow: 0 0 0 3px rgba(255,107,107,0.3), 0 20px 40px rgba(0,0,0,0.4);
-      cursor: pointer;
-      width: 100%;
-      height: auto;
-      background: #0f0c29;
-    }
-
-    .ui-bar {
+    /* Header with Logo */
+    .game-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
-      gap: 0.8rem;
-      margin-bottom: 1rem;
-      padding: 0.6rem 1.2rem;
-      background: rgba(0,0,0,0.5);
-      border-radius: 2rem;
-      backdrop-filter: blur(10px);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid #F2C620;
     }
-
-    .stat-card {
-      background: linear-gradient(135deg, #1a1a3a, #0d0d2b);
-      padding: 0.4rem 1rem;
-      border-radius: 1.5rem;
+    .logo-area {
       display: flex;
       align-items: center;
-      gap: 0.6rem;
-      border: 1px solid rgba(255,107,107,0.3);
+      gap: 1rem;
     }
-
-    .stat-emoji { font-size: 1.5rem; }
-    .stat-info { display: flex; flex-direction: column; }
-    .stat-value { font-size: 1.6rem; font-weight: bold; font-family: monospace; line-height: 1; }
-    .stat-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: #aaa; }
-
-    .health-bar {
-      background: #2a2a4a;
-      border-radius: 1rem;
-      height: 8px;
-      width: 120px;
-      overflow: hidden;
-    }
-    .health-fill { height: 100%; background: linear-gradient(90deg, #ff6b6b, #ff4757); width: 100%; transition: width 0.3s; }
-
-    .input-area {
-      margin-top: 1rem;
+    .logo-circle {
+      width: 50px;
+      height: 50px;
+      background: linear-gradient(135deg, #002D62, #001B3D);
+      border-radius: 50%;
       display: flex;
-      gap: 0.6rem;
+      align-items: center;
+      justify-content: center;
+      color: #F2C620;
+      font-weight: bold;
+      font-size: 1.2rem;
+      border: 2px solid #F2C620;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    .logo-text h1 {
+      font-size: 1.2rem;
+      color: #002D62;
+      letter-spacing: 1px;
+    }
+    .logo-text p {
+      font-size: 0.7rem;
+      color: #666;
     }
 
-    .game-input {
-      flex: 1;
-      background: #0f0c29;
-      border: 2px solid #ff6b6b;
-      padding: 1rem 1.2rem;
+    /* Stats Grid */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.8rem;
+      margin-bottom: 1.5rem;
+    }
+    .stat-card {
+      background: linear-gradient(135deg, #002D62, #001B3D);
+      padding: 0.8rem;
+      border-radius: 1rem;
+      text-align: center;
+      border: 1px solid rgba(242,198,32,0.3);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .stat-emoji { font-size: 1.5rem; display: block; }
+    .stat-value { font-size: 1.5rem; font-weight: bold; color: #F2C620; font-family: monospace; }
+    .stat-label { font-size: 0.65rem; color: #ccc; text-transform: uppercase; }
+
+    /* Battle Area */
+    .battle-area {
+      background: white;
+      border-radius: 1.5rem;
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+      border: 2px solid #F2C620;
+      box-shadow: 0 8px 20px rgba(0,45,98,0.15);
+    }
+    .enemy-badge {
+      display: inline-block;
+      background: #002D62;
+      color: #F2C620;
+      padding: 0.3rem 1rem;
       border-radius: 2rem;
-      color: white;
-      font-size: 1.1rem;
+      font-size: 0.8rem;
+      font-weight: bold;
+      margin-bottom: 1rem;
+    }
+    .difficulty-badge {
+      display: inline-block;
+      background: #F2C620;
+      color: #002D62;
+      padding: 0.3rem 1rem;
+      border-radius: 2rem;
+      font-size: 0.8rem;
+      font-weight: bold;
+      margin-left: 0.5rem;
+    }
+    .sentence-box {
+      background: #F0F4F8;
+      border-radius: 1.5rem;
+      padding: 1.5rem;
+      margin: 1rem 0;
+      border-left: 6px solid #F2C620;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .sentence-box:hover { background: #E8EDF2; }
+    .sentence-text { font-size: 1.3rem; color: #002D62; line-height: 1.5; word-break: break-word; font-weight: 500; }
+    .sentence-hint { font-size: 0.85rem; color: #F2C620; margin-top: 0.8rem; font-family: monospace; }
+    .instruction { background: rgba(242,198,32,0.15); padding: 0.8rem; border-radius: 1rem; margin: 1rem 0; text-align: center; color: #002D62; }
+    .input-area { display: flex; gap: 0.8rem; margin-top: 1rem; flex-wrap: wrap; }
+    .game-input {
+      flex: 2;
+      background: white;
+      border: 2px solid #002D62;
+      padding: 1rem;
+      border-radius: 1rem;
+      color: #002D62;
+      font-size: 1rem;
       font-family: monospace;
       outline: none;
-      transition: all 0.2s;
     }
-    .game-input:focus { border-color: #ffd93d; box-shadow: 0 0 15px rgba(255,107,107,0.3); }
-
-    .action-btn {
-      background: linear-gradient(135deg, #ff6b6b, #ff4757);
+    .game-input:focus { border-color: #F2C620; box-shadow: 0 0 15px rgba(242,198,32,0.3); }
+    .submit-btn {
+      background: linear-gradient(135deg, #002D62, #001B3D);
       border: none;
-      padding: 1rem 1.8rem;
-      border-radius: 2rem;
-      color: white;
+      padding: 1rem 2rem;
+      border-radius: 1rem;
+      color: #F2C620;
       font-weight: bold;
       cursor: pointer;
+      flex: 1;
       transition: transform 0.1s;
-      font-size: 1rem;
     }
-    .action-btn:active { transform: scale(0.96); }
+    .submit-btn:active { transform: scale(0.97); }
 
-    .powerup-bar {
-      display: flex;
-      gap: 0.5rem;
-      margin-top: 0.8rem;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-    .powerup {
-      background: rgba(255,217,61,0.15);
-      border: 1px solid #ffd93d;
-      padding: 0.4rem 1rem;
+    /* Power-ups */
+    .powerups { display: flex; gap: 0.6rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1rem; }
+    .power-btn {
+      background: #002D62;
+      border: 1px solid #F2C620;
+      padding: 0.4rem 0.8rem;
       border-radius: 2rem;
-      font-size: 0.85rem;
-      color: #ffd93d;
+      color: #F2C620;
+      font-size: 0.75rem;
       cursor: pointer;
       transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
     }
-    .powerup:active { transform: scale(0.95); background: rgba(255,217,61,0.3); }
-    .powerup.disabled { opacity: 0.3; cursor: not-allowed; }
+    .power-btn:active { transform: scale(0.95); background: #001B3D; }
+    .power-btn.disabled { opacity: 0.4; cursor: not-allowed; }
 
-    /* Instructions Panel */
-    .instructions {
-      background: rgba(0,0,0,0.7);
+    .feedback-area {
+      background: #F0F4F8;
       border-radius: 1rem;
-      padding: 1rem;
+      padding: 0.8rem;
       margin-top: 1rem;
-      border-left: 4px solid #ffd93d;
-    }
-    .instructions h3 {
-      color: #ffd93d;
-      margin-bottom: 0.5rem;
-      font-size: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    .instructions-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 0.8rem;
-      font-size: 0.85rem;
-    }
-    .instruction-item {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      color: #ccc;
-    }
-    .instruction-icon {
-      font-size: 1.3rem;
-      min-width: 35px;
       text-align: center;
+      font-size: 0.85rem;
+      min-height: 65px;
+      color: #002D62;
     }
-    .instruction-text strong {
-      color: #ffd93d;
-    }
-    .examples {
-      margin-top: 0.8rem;
-      padding-top: 0.8rem;
-      border-top: 1px solid rgba(255,255,255,0.1);
-      font-size: 0.8rem;
-      color: #aaa;
-    }
-    .examples span {
-      color: #4ade80;
-      font-family: monospace;
-    }
+    .correct-feedback { color: #10B981; font-weight: bold; }
+    .wrong-feedback { color: #EF4444; font-weight: bold; }
 
-    .combo-indicator {
+    /* Modals */
+    .modal {
+      display: none;
       position: fixed;
-      top: 30%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 3rem;
-      font-weight: bold;
-      color: #ffd93d;
-      text-shadow: 0 0 20px #ff6b6b;
-      pointer-events: none;
-      z-index: 100;
-      animation: comboPop 0.5s ease-out forwards;
-      white-space: nowrap;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,45,98,0.95);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
     }
-
-    @keyframes comboPop {
-      0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
-      50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
-      100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+    .modal.active { display: flex; }
+    .modal-content {
+      background: white;
+      max-width: 500px;
+      width: 90%;
+      padding: 1.5rem;
+      border-radius: 1.5rem;
+      border: 2px solid #F2C620;
+      max-height: 80vh;
+      overflow-y: auto;
+      color: #002D62;
     }
+    .modal-content h3 { color: #002D62; margin-bottom: 1rem; }
+    .leaderboard {
+      background: #F0F4F8;
+      border-radius: 1rem;
+      padding: 0.8rem;
+      margin-top: 1rem;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .leaderboard h4 { color: #002D62; margin-bottom: 0.5rem; }
+    .leaderboard-entry { padding: 0.3rem; border-bottom: 1px solid #ddd; font-size: 0.8rem; }
 
     @keyframes shake {
       0%,100% { transform: translateX(0); }
       25% { transform: translateX(-5px); }
       75% { transform: translateX(5px); }
     }
+    .shake { animation: shake 0.3s ease; }
+    @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.02); } }
+    .correct-pulse { animation: pulse 0.3s ease; }
 
     @media (max-width: 700px) {
-      .ui-bar { gap: 0.4rem; }
-      .stat-card { padding: 0.2rem 0.6rem; }
-      .stat-value { font-size: 1.2rem; }
-      .stat-emoji { font-size: 1.2rem; }
-      .instruction-item { font-size: 0.7rem; }
+      .stats { grid-template-columns: repeat(3, 1fr); }
+      .sentence-text { font-size: 1rem; }
+      .input-area { flex-direction: column; }
+      .game-header { flex-direction: column; text-align: center; }
     }
   </style>
 </head>
 <body>
-<div>
-  <div class="game-container">
-    <div class="ui-bar">
-      <div class="stat-card">
-        <span class="stat-emoji">🎯</span>
-        <div class="stat-info">
-          <div class="stat-value" id="scoreValue">0</div>
-          <div class="stat-label">SCORE</div>
-        </div>
-      </div>
-      <div class="stat-card">
-        <span class="stat-emoji">⚡</span>
-        <div class="stat-info">
-          <div class="stat-value" id="comboValue">0x</div>
-          <div class="stat-label">COMBO</div>
-        </div>
-      </div>
-      <div class="stat-card">
-        <span class="stat-emoji">❤️</span>
-        <div class="stat-info">
-          <div class="stat-value" id="healthValue">3</div>
-          <div class="health-bar"><div class="health-fill" id="healthFill" style="width:100%"></div></div>
-        </div>
-      </div>
-      <div class="stat-card">
-        <span class="stat-emoji">🏆</span>
-        <div class="stat-info">
-          <div class="stat-value" id="highScoreValue">0</div>
-          <div class="stat-label">BEST</div>
-        </div>
+<div class="game-container" id="gameContainer">
+  <!-- Header with Academia Europea branding -->
+  <div class="game-header">
+    <div class="logo-area">
+      <div class="logo-circle">AE</div>
+      <div class="logo-text">
+        <h1>ACADEMIA EUROPEA</h1>
+        <p>Language Excellence since 1998</p>
       </div>
     </div>
+    <div style="font-size:0.75rem; color:#666;">Unit 12: Active & Passive Voice</div>
+  </div>
 
-    <canvas id="gameCanvas" width="1000" height="500" style="width:100%; height:auto; aspect-ratio:1000/500"></canvas>
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-card"><span class="stat-emoji">🎯</span><div class="stat-value" id="scoreValue">0</div><div class="stat-label">SCORE</div></div>
+    <div class="stat-card"><span class="stat-emoji">⚡</span><div class="stat-value" id="streakValue">0</div><div class="stat-label">STREAK</div></div>
+    <div class="stat-card"><span class="stat-emoji">📊</span><div class="stat-value" id="tierValue">Easy</div><div class="stat-label">DIFFICULTY</div></div>
+    <div class="stat-card"><span class="stat-emoji">❤️</span><div class="stat-value" id="healthValue">5</div><div class="stat-label">LIVES</div></div>
+    <div class="stat-card"><span class="stat-emoji">🏆</span><div class="stat-value" id="highScoreValue">0</div><div class="stat-label">BEST</div></div>
+  </div>
 
+  <!-- Battle Area -->
+  <div class="battle-area">
+    <div>
+      <span class="enemy-badge" id="enemyBadge">⚔️ ENEMY APPROACHING ⚔️</span>
+      <span class="difficulty-badge" id="difficultyBadge">🎯 Tier 0/5</span>
+    </div>
+    <div class="sentence-box" id="sentenceBox">
+      <div class="sentence-text" id="sentenceText">The ball was kicked by the player.</div>
+      <div class="sentence-hint" id="sentenceHint">🔍 IDENTIFY: Type "active" or "passive"</div>
+    </div>
+    <div class="instruction" id="instructionText">💡 Type "active" or "passive"</div>
     <div class="input-area">
-      <input type="text" id="answerInput" class="game-input" placeholder="✏️ Type your answer here... (active / passive / transformed sentence)" autocomplete="off">
-      <button id="submitBtn" class="action-btn">⚡ DEFEND</button>
+      <input type="text" id="answerInput" class="game-input" placeholder="Type your answer here..." autocomplete="off">
+      <button id="submitBtn" class="submit-btn">⚡ DEFEND!</button>
     </div>
+  </div>
 
-    <div class="powerup-bar">
-      <div class="powerup" id="powerSlow">🐢 Slow Fall (3)</div>
-      <div class="powerup" id="powerDouble">✨ 2x Points (3)</div>
-      <div class="powerup" id="powerShield">🛡️ Shield (3)</div>
-      <div class="powerup" id="powerReset">🔄 Reset Game</div>
-    </div>
+  <!-- Power-ups & Controls -->
+  <div class="powerups">
+    <div class="power-btn" id="powerHint">💡 Hint (3)</div>
+    <div class="power-btn" id="powerSkip">⏩ Skip (3)</div>
+    <div class="power-btn" id="powerDouble">✨ 2x Points (3)</div>
+    <div class="power-btn" id="powerReset">🔄 New Game</div>
+    <div class="power-btn" id="powerAccessibility">♿ Accessibility</div>
+    <div class="power-btn" id="showInstructions">📖 How to Play</div>
+    <div class="power-btn" id="showLeaderboard">🏆 Leaderboard</div>
+    <div class="power-btn" id="teacherPanelBtn">👩‍🏫 Teacher</div>
+  </div>
 
-    <!-- INSTRUCTIONS -->
-    <div class="instructions">
-      <h3>🎮 HOW TO PLAY</h3>
-      <div class="instructions-grid">
-        <div class="instruction-item">
-          <div class="instruction-icon">📖</div>
-          <div class="instruction-text"><strong>1. Read the sentence</strong><br>Each block contains a sentence + task</div>
-        </div>
-        <div class="instruction-item">
-          <div class="instruction-icon">🔍</div>
-          <div class="instruction-text"><strong>2. Identify or Transform</strong><br>🔹 IDENTIFY: type "active" or "passive"<br>🔹 TRANSFORM: rewrite in PASSIVE voice</div>
-        </div>
-        <div class="instruction-item">
-          <div class="instruction-icon">⌨️</div>
-          <div class="instruction-text"><strong>3. Type & Defend</strong><br>Press ENTER or click DEFEND before blocks hit bottom!</div>
-        </div>
-        <div class="instruction-item">
-          <div class="instruction-icon">⚡</div>
-          <div class="instruction-text"><strong>4. Build Combo</strong><br>Correct answers = more points! Wrong = combo reset</div>
-        </div>
-      </div>
-      <div class="examples">
-        💡 <strong>EXAMPLES:</strong><br>
-        🔹 "The ball was kicked by the player." → <span>passive</span><br>
-        🔹 "ACTIVE → The chef cooks the meal." → <span>the meal is cooked by the chef</span><br>
-        🔹 "ACTIVE (PAST) → The storm destroyed the house." → <span>the house was destroyed by the storm</span>
-      </div>
-    </div>
+  <!-- Leaderboard -->
+  <div id="leaderboardContainer" style="display:none;" class="leaderboard"></div>
+
+  <!-- Feedback -->
+  <div class="feedback-area" id="feedbackArea">✨ Welcome to Academia Europea! Answer correctly to defeat each enemy. Build your streak for bonus points!</div>
+</div>
+
+<!-- Instructions Modal -->
+<div id="instructionsModal" class="modal">
+  <div class="modal-content">
+    <h3>🎮 HOW TO PLAY VOICE DEFENDER</h3>
+    <p><strong>⚔️ Adaptive Difficulty:</strong> The game gets harder as you get better!</p>
+    <p>• 3 correct in a row → Difficulty increases</p>
+    <p>• 2 wrong answers → Difficulty decreases</p>
+    <p><strong>📖 Each Enemy Shows:</strong></p>
+    <div style="background:#F0F4F8; padding:0.5rem; margin:0.5rem 0; border-radius:0.5rem;">🔍 IDENTIFY → Type "active" or "passive"</div>
+    <div style="background:#F0F4F8; padding:0.5rem; margin:0.5rem 0; border-radius:0.5rem;">✍️ TRANSFORM → Rewrite in PASSIVE voice</div>
+    <p><strong>⚡ Power-ups:</strong> Hint, Skip, 2x Points</p>
+    <p><strong>👩‍🏫 Teacher Mode:</strong> Press 'T' or click Teacher button to set class settings</p>
+    <p><strong>♿ Accessibility:</strong> Click Accessibility button for high contrast, dyslexic font, text-to-speech</p>
+    <button class="close-modal" id="closeModalBtn" style="background:#F2C620; color:#002D62; border:none; padding:0.5rem; border-radius:0.5rem; margin-top:1rem; width:100%; font-weight:bold;">GOT IT! LET'S PLAY →</button>
+  </div>
+</div>
+
+<!-- Teacher Panel Modal -->
+<div id="teacherModal" class="modal">
+  <div class="modal-content">
+    <h3>👩‍🏫 Teacher Controls - Academia Europea</h3>
+    <label>Max Difficulty (1-5): <input type="range" id="teacherMaxDiff" min="1" max="5" value="5" style="width:100%;"></label>
+    <label>Time Limit (seconds, 0=none): <input type="number" id="teacherTimeLimit" value="0" style="width:100%; margin:0.5rem 0;"></label>
+    <label>Class Code: <input type="text" id="teacherClassCode" placeholder="Enter class code" style="width:100%; margin:0.5rem 0; padding:0.5rem;"></label>
+    <button id="saveSettingsBtn" style="background:#F2C620; color:#002D62; border:none; padding:0.5rem; border-radius:0.5rem; margin:0.3rem; width:100%; font-weight:bold;">Save to Class</button>
+    <button id="exportClassReport" style="background:#10B981; color:white; border:none; padding:0.5rem; border-radius:0.5rem; margin:0.3rem; width:100%; font-weight:bold;">Export Class Report</button>
+    <button id="closeTeacherBtn" style="background:#EF4444; color:white; border:none; padding:0.5rem; border-radius:0.5rem; margin:0.3rem; width:100%;">Close</button>
+  </div>
+</div>
+
+<!-- Accessibility Modal -->
+<div id="accessibilityModal" class="modal">
+  <div class="modal-content">
+    <h3>♿ Accessibility Settings</h3>
+    <label><input type="checkbox" id="highContrastToggle"> High Contrast Mode</label><br><br>
+    <label><input type="checkbox" id="dyslexicFontToggle"> Dyslexic-Friendly Font</label><br><br>
+    <label><input type="checkbox" id="largeTextToggle"> Large Text Mode</label><br><br>
+    <label><input type="checkbox" id="textToSpeechToggle"> Text-to-Speech (click sentences to hear)</label><br><br>
+    <button id="closeAccessibilityBtn" style="background:#F2C620; color:#002D62; border:none; padding:0.5rem; border-radius:0.5rem; margin-top:1rem; width:100%; font-weight:bold;">Save & Close</button>
   </div>
 </div>
 
 <script>
-  const canvas = document.getElementById('gameCanvas');
-  const ctx = canvas.getContext('2d');
-  
-  // Dimensions
-  let width = 1000;
-  let height = 500;
-  canvas.width = width;
-  canvas.height = height;
-  
-  // Game state
+  // ============ QUESTION BANK WITH DIFFICULTY TIERS ============
+  const allQuestions = [
+    // Tier 0 (Easiest) - Identify only
+    { sentence: "The ball was kicked by the player.", answer: "passive", type: "identify", hint: "Was + past participle = passive", difficulty: 0 },
+    { sentence: "She writes amazing stories.", answer: "active", type: "identify", hint: "Subject performs the action = active", difficulty: 0 },
+    { sentence: "The cake is being baked by mom.", answer: "passive", type: "identify", hint: "Is being + past participle = passive", difficulty: 0 },
+    { sentence: "They play soccer every weekend.", answer: "active", type: "identify", hint: "Subject does the action = active", difficulty: 0 },
+    { sentence: "The song was sung beautifully.", answer: "passive", type: "identify", hint: "Was + past participle = passive", difficulty: 0 },
+    // Tier 1 - Simple present transform
+    { sentence: "ACTIVE → The chef cooks the meal.", answer: "the meal is cooked by the chef", type: "transform", hint: "Object becomes subject + is + past participle", difficulty: 1 },
+    { sentence: "ACTIVE → The dog chases the cat.", answer: "the cat is chased by the dog", type: "transform", hint: "The cat (object) + is chased", difficulty: 1 },
+    { sentence: "ACTIVE → The teacher explains the lesson.", answer: "the lesson is explained by the teacher", type: "transform", hint: "The lesson + is explained", difficulty: 1 },
+    // Tier 2 - Past tense transforms
+    { sentence: "ACTIVE (PAST) → The storm destroyed the house.", answer: "the house was destroyed by the storm", type: "transform", hint: "Was + past participle (past tense passive)", difficulty: 2 },
+    { sentence: "ACTIVE (PAST) → Shakespeare wrote Hamlet.", answer: "hamlet was written by shakespeare", type: "transform", hint: "Was written (irregular past participle)", difficulty: 2 },
+    { sentence: "ACTIVE (PAST) → The team won the championship.", answer: "the championship was won by the team", type: "transform", hint: "Was won (irregular: win-won-won)", difficulty: 2 },
+    // Tier 3 - No agent
+    { sentence: "ACTIVE (NO AGENT) → Someone stole my wallet.", answer: "my wallet was stolen", type: "transform", hint: "Don't include 'by someone'", difficulty: 3 },
+    { sentence: "ACTIVE (NO AGENT) → People speak English worldwide.", answer: "english is spoken worldwide", type: "transform", hint: "Omit 'by people'", difficulty: 3 },
+    { sentence: "ACTIVE (NO AGENT) → They built this bridge in 1990.", answer: "this bridge was built in 1990", type: "transform", hint: "Omit 'by them'", difficulty: 3 },
+    // Tier 4 - Future & Perfect
+    { sentence: "ACTIVE (FUTURE) → They will announce the winner.", answer: "the winner will be announced", type: "transform", hint: "Will be + past participle", difficulty: 4 },
+    { sentence: "ACTIVE (PERFECT) → Someone has eaten all the cookies.", answer: "all the cookies have been eaten", type: "transform", hint: "Have/has been + past participle", difficulty: 4 },
+    { sentence: "ACTIVE (CONTINUOUS) → The company is launching a product.", answer: "a product is being launched by the company", type: "transform", hint: "Is being + past participle", difficulty: 4 }
+  ];
+
+  // ============ GAME STATE ============
+  let availableQuestions = [...allQuestions];
+  let currentQuestion = null;
   let score = 0;
-  let combo = 0;
-  let health = 3;
-  let gameRunning = true;
-  let frame = 0;
-  let particles = [];
-  let floatingTexts = [];
+  let streak = 0;
+  let wrongCount = 0;
+  let health = 5;
+  let currentTier = 0;
+  let gameActive = true;
+  let doublePointsActive = false;
+  let doublePointsRemaining = 0;
+  let doublePointsUses = 3;
+  let hintUses = 3;
+  let skipUses = 3;
+  let teacherMaxDiff = 5;
+  let teacherTimeLimit = 0;
+  let timerInterval = null;
+  let timeRemaining = 0;
   
-  // Powerups
-  let slowActive = false;
-  let doublePoints = false;
-  let shieldActive = false;
-  let slowUses = 3;
-  let doubleUses = 3;
-  let shieldUses = 3;
+  // Analytics
+  let analytics = {
+    totalAnswers: 0, correctAnswers: 0, startTime: Date.now(),
+    byType: { identify: { correct: 0, total: 0 }, transform: { correct: 0, total: 0 } },
+    responseTimes: [], missedQuestions: [], tierHistory: []
+  };
+  
+  // Leaderboard
+  let dailyLeaderboard = JSON.parse(localStorage.getItem('voiceLeaderboard')) || [];
+  let playerName = localStorage.getItem('playerName') || 'Student_' + Math.floor(Math.random()*1000);
   
   // High score
   let highScore = localStorage.getItem('voiceDefenderHigh') ? parseInt(localStorage.getItem('voiceDefenderHigh')) : 0;
-  document.getElementById('highScoreValue').innerText = highScore;
   
-  // Falling sentences array
-  let fallingItems = [];
-  let spawnCounter = 0;
-  let spawnDelay = 60; // frames between spawns (slower start)
+  // Accessibility settings
+  let accessibility = JSON.parse(localStorage.getItem('accessibility')) || { highContrast: false, dyslexicFont: false, largeText: false, textToSpeech: false };
   
-  // ============ GRAMMAR QUESTION BANK ============
-  const questions = [
-    // Level 1: Identify voice
-    { sentence: "The ball was kicked by the player.", answer: "passive", type: "identify", displayHint: "🔍 IDENTIFY: Type 'active' or 'passive'" },
-    { sentence: "She writes amazing stories.", answer: "active", type: "identify", displayHint: "🔍 IDENTIFY: Type 'active' or 'passive'" },
-    { sentence: "The cake is being baked by mom.", answer: "passive", type: "identify", displayHint: "🔍 IDENTIFY: Type 'active' or 'passive'" },
-    { sentence: "They play soccer every weekend.", answer: "active", type: "identify", displayHint: "🔍 IDENTIFY: Type 'active' or 'passive'" },
-    { sentence: "The song was sung beautifully.", answer: "passive", type: "identify", displayHint: "🔍 IDENTIFY: Type 'active' or 'passive'" },
-    { sentence: "I love pizza.", answer: "active", type: "identify", displayHint: "🔍 IDENTIFY: Type 'active' or 'passive'" },
-    
-    // Level 2: Transform to passive (present)
-    { sentence: "ACTIVE → The chef cooks the meal.", answer: "the meal is cooked by the chef", type: "transform", displayHint: "✍️ TRANSFORM: Rewrite in PASSIVE voice" },
-    { sentence: "ACTIVE → The dog chases the cat.", answer: "the cat is chased by the dog", type: "transform", displayHint: "✍️ TRANSFORM: Rewrite in PASSIVE voice" },
-    { sentence: "ACTIVE → The teacher explains the lesson.", answer: "the lesson is explained by the teacher", type: "transform", displayHint: "✍️ TRANSFORM: Rewrite in PASSIVE voice" },
-    { sentence: "ACTIVE → The artist paints a portrait.", answer: "a portrait is painted by the artist", type: "transform", displayHint: "✍️ TRANSFORM: Rewrite in PASSIVE voice" },
-    
-    // Level 3: Past tense transformations
-    { sentence: "ACTIVE (PAST) → The storm destroyed the house.", answer: "the house was destroyed by the storm", type: "transform", displayHint: "✍️ TRANSFORM: Rewrite in PASSIVE (past tense)" },
-    { sentence: "ACTIVE (PAST) → Shakespeare wrote Hamlet.", answer: "hamlet was written by shakespeare", type: "transform", displayHint: "✍️ TRANSFORM: Rewrite in PASSIVE (past tense)" },
-    { sentence: "ACTIVE (PAST) → The team won the championship.", answer: "the championship was won by the team", type: "transform", displayHint: "✍️ TRANSFORM: Rewrite in PASSIVE (past tense)" },
-    
-    // Level 4: No agent + plural
-    { sentence: "ACTIVE (NO AGENT) → Someone stole my wallet.", answer: "my wallet was stolen", type: "transform", displayHint: "✍️ TRANSFORM: Passive without 'by someone'" },
-    { sentence: "ACTIVE (NO AGENT) → People speak English worldwide.", answer: "english is spoken worldwide", type: "transform", displayHint: "✍️ TRANSFORM: Passive without 'by people'" },
-    { sentence: "ACTIVE (NO AGENT) → The children found the toys.", answer: "the toys were found by the children", type: "transform", displayHint: "✍️ TRANSFORM: Make plural subject agree" },
-    
-    // Level 5: Future/Perfect
-    { sentence: "ACTIVE (FUTURE) → They will announce the winner.", answer: "the winner will be announced", type: "transform", displayHint: "✍️ TRANSFORM: Future passive (will be + pp)" },
-    { sentence: "ACTIVE (PERFECT) → Someone has eaten all the cookies.", answer: "all the cookies have been eaten", type: "transform", displayHint: "✍️ TRANSFORM: Present perfect passive" },
-    { sentence: "ACTIVE (CONTINUOUS) → The company is launching a product.", answer: "a product is being launched by the company", type: "transform", displayHint: "✍️ TRANSFORM: Present continuous passive" }
-  ];
-  
-  function getRandomQuestion() {
-    const idx = Math.floor(Math.random() * questions.length);
-    return { ...questions[idx] };
+  // ============ HELPER FUNCTIONS ============
+  function applyAccessibility() {
+    if (accessibility.highContrast) document.body.classList.add('high-contrast');
+    else document.body.classList.remove('high-contrast');
+    if (accessibility.dyslexicFont) document.body.classList.add('dyslexic');
+    else document.body.classList.remove('dyslexic');
+    if (accessibility.largeText) document.body.classList.add('large-text');
+    else document.body.classList.remove('large-text');
   }
   
-  function spawnFallingItem() {
-    if (!gameRunning) return;
-    const q = getRandomQuestion();
-    const x = 20 + Math.random() * (width - 340);
-    const baseSpeed = slowActive ? 0.5 : 0.85; // SLOWER default speed
-    fallingItems.push({
-      id: Math.random(),
-      sentence: q.sentence,
-      answer: q.answer,
-      type: q.type,
-      displayHint: q.displayHint,
-      x: x,
-      y: -50,
-      speed: baseSpeed,
-      width: 320,
-      height: 80
+  function speakText(text) {
+    if (accessibility.textToSpeech && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+      let utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.9;
+      window.speechSynthesis.speak(utterance);
+    }
+  }
+  
+  function filterQuestionsByTier() {
+    let maxAllowed = Math.min(currentTier + 1, teacherMaxDiff);
+    availableQuestions = allQuestions.filter(q => q.difficulty <= maxAllowed);
+    if (availableQuestions.length === 0) availableQuestions = [...allQuestions];
+    availableQuestions.sort((a,b) => {
+      let aMissed = analytics.missedQuestions.includes(a.sentence) ? -1 : 1;
+      let bMissed = analytics.missedQuestions.includes(b.sentence) ? -1 : 1;
+      return aMissed - bMissed;
     });
   }
   
-  // Normalize answer for comparison
+  function adjustDifficulty() {
+    let oldTier = currentTier;
+    if (streak >= 3 && currentTier < teacherMaxDiff - 1) {
+      currentTier++;
+      streak = 0;
+      showFeedback(`🔥 DIFFICULTY UP: Tier ${currentTier}! 🔥`, true);
+    } else if (wrongCount >= 2 && currentTier > 0) {
+      currentTier--;
+      wrongCount = 0;
+      streak = 0;
+      showFeedback(`📖 Difficulty decreased to Tier ${currentTier}`, true);
+    }
+    if (oldTier !== currentTier) {
+      filterQuestionsByTier();
+      analytics.tierHistory.push({ tier: currentTier, time: Date.now(), score: score });
+      updateTierDisplay();
+    }
+  }
+  
+  function updateTierDisplay() {
+    const tierNames = ['Easy', 'Normal', 'Hard', 'Expert', 'Master'];
+    document.getElementById('tierValue').innerText = tierNames[currentTier] || 'Normal';
+    document.getElementById('difficultyBadge').innerHTML = `🎯 Tier ${currentTier}/5`;
+    if (currentTier >= 3) document.getElementById('difficultyBadge').style.background = '#FF6B6B';
+    else if (currentTier >= 1) document.getElementById('difficultyBadge').style.background = '#F2C620';
+    else document.getElementById('difficultyBadge').style.background = '#10B981';
+  }
+  
+  function loadNewQuestion() {
+    if (!gameActive) return;
+    filterQuestionsByTier();
+    if (availableQuestions.length === 0) filterQuestionsByTier();
+    const randomIndex = Math.floor(Math.random() * availableQuestions.length);
+    currentQuestion = { ...availableQuestions[randomIndex] };
+    
+    document.getElementById('sentenceText').innerText = currentQuestion.sentence;
+    if (currentQuestion.type === 'identify') {
+      document.getElementById('sentenceHint').innerHTML = '🔍 IDENTIFY: Type "active" or "passive"';
+      document.getElementById('instructionText').innerHTML = 'Type <strong>"active"</strong> or <strong>"passive"</strong>';
+    } else {
+      document.getElementById('sentenceHint').innerHTML = '✍️ TRANSFORM: Rewrite the sentence in PASSIVE voice';
+      document.getElementById('instructionText').innerHTML = 'Type the <strong>full passive sentence</strong>';
+    }
+    document.getElementById('answerInput').value = '';
+    document.getElementById('answerInput').focus();
+    
+    if (teacherTimeLimit > 0 && gameActive) {
+      if (timerInterval) clearInterval(timerInterval);
+      timeRemaining = teacherTimeLimit;
+      timerInterval = setInterval(() => {
+        if (timeRemaining <= 0) {
+          clearInterval(timerInterval);
+          processAnswer(true);
+        } else {
+          timeRemaining--;
+        }
+      }, 1000);
+    }
+  }
+  
   function normalize(str) {
     return str.trim().toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
   }
   
-  function checkAndDefend() {
-    if (!gameRunning) return;
-    const userInput = document.getElementById('answerInput').value;
-    if (!userInput.trim()) return;
-    
-    const normalizedUser = normalize(userInput);
-    let hitIndex = -1;
-    
-    // Find matching falling item (closest to bottom = most dangerous)
-    let closest = null;
-    let closestDist = Infinity;
-    for (let i = 0; i < fallingItems.length; i++) {
-      const item = fallingItems[i];
-      const normalizedCorrect = normalize(item.answer);
-      if (normalizedUser === normalizedCorrect) {
-        const distToBottom = height - item.y;
-        if (distToBottom < closestDist) {
-          closestDist = distToBottom;
-          closest = i;
-        }
-      }
-    }
-    
-    if (closest !== -1) {
-      // CORRECT DEFENSE!
-      const item = fallingItems[closest];
-      let points = 100;
-      if (doublePoints) points = 200;
-      points *= (1 + Math.floor(combo / 5));
-      score += points;
-      combo++;
-      if (combo > 20) combo = 20;
-      
-      updateUI();
-      
-      // Create particles at item position
-      createParticles(item.x + item.width/2, item.y + item.height/2);
-      addFloatingText(`+${Math.floor(points)}`, item.x + item.width/2, item.y + item.height/2, '#4ade80');
-      
-      // Show combo effect
-      if (combo > 2 && combo % 3 === 0) {
-        showComboEffect(`${combo}x COMBO!`);
-      }
-      
-      // Remove the item
-      fallingItems.splice(closest, 1);
-      document.getElementById('answerInput').value = '';
-      document.getElementById('answerInput').focus();
-      
-      // Check win condition
-      if (score >= 5000) {
-        gameWin();
-      }
-    } else {
-      // Wrong answer - penalty
-      addFloatingText('❌ WRONG!', width/2, 150, '#ef4444');
-      combo = 0;
-      updateUI();
-      document.getElementById('answerInput').value = '';
-      document.getElementById('answerInput').focus();
-      
-      // Shake effect
-      document.querySelector('.game-container').style.animation = 'shake 0.3s ease';
-      setTimeout(() => {
-        document.querySelector('.game-container').style.animation = '';
-      }, 300);
-    }
-  }
-  
-  function gameWin() {
-    gameRunning = false;
-    addFloatingText('🏆 VICTORY! GRAMMAR MASTER! 🏆', width/2, height/2, '#ffd700');
-    setTimeout(() => {
-      alert(`🌟 AMAZING! You've mastered Active & Passive Voice!\nFinal Score: ${Math.floor(score)}\nClick OK to play again!`);
-      resetGame();
-    }, 500);
-  }
-  
   function updateUI() {
     document.getElementById('scoreValue').innerText = Math.floor(score);
-    document.getElementById('comboValue').innerText = combo + 'x';
+    document.getElementById('streakValue').innerText = streak;
     document.getElementById('healthValue').innerText = health;
-    const healthPercent = (health / 3) * 100;
-    document.getElementById('healthFill').style.width = healthPercent + '%';
-    
     if (score > highScore) {
       highScore = Math.floor(score);
       localStorage.setItem('voiceDefenderHigh', highScore);
       document.getElementById('highScoreValue').innerText = highScore;
     }
+    updateLeaderboardDisplay();
   }
   
-  function createParticles(x, y) {
-    for (let i = 0; i < 12; i++) {
-      particles.push({
-        x: x, y: y,
-        vx: (Math.random() - 0.5) * 5,
-        vy: (Math.random() - 0.5) * 5 - 2,
-        life: 1,
-        color: `hsl(${Math.random() * 60 + 40}, 100%, 60%)`
-      });
+  function showFeedback(message, isCorrect) {
+    const feedbackArea = document.getElementById('feedbackArea');
+    feedbackArea.innerHTML = isCorrect ? `<span class="correct-feedback">✅ ${message}</span>` : `<span class="wrong-feedback">❌ ${message}</span>`;
+    if (isCorrect) {
+      document.querySelector('.battle-area').classList.add('correct-pulse');
+      setTimeout(() => document.querySelector('.battle-area').classList.remove('correct-pulse'), 300);
+    } else {
+      document.getElementById('gameContainer').classList.add('shake');
+      setTimeout(() => document.getElementById('gameContainer').classList.remove('shake'), 300);
     }
   }
   
-  function addFloatingText(text, x, y, color) {
-    floatingTexts.push({
-      text: text,
-      x: x,
-      y: y,
-      life: 1,
-      color: color
-    });
-  }
-  
-  function showComboEffect(text) {
-    const div = document.createElement('div');
-    div.className = 'combo-indicator';
-    div.innerText = text;
-    document.body.appendChild(div);
-    setTimeout(() => div.remove(), 500);
-  }
-  
-  function takeDamage() {
-    if (shieldActive) {
-      addFloatingText('🛡️ SHIELD BLOCKED!', width/2, 150, '#60a5fa');
-      return;
+  function updateLeaderboardDisplay() {
+    let container = document.getElementById('leaderboardContainer');
+    if (container.style.display !== 'none') {
+      container.innerHTML = '<h4>🏆 Academia Europea Top 10 🏆</h4>' + 
+        dailyLeaderboard.map((e,i) => `<div class="leaderboard-entry">${i+1}. ${e.name}: ${Math.floor(e.score)}</div>`).join('');
     }
-    health--;
-    combo = 0;
-    updateUI();
+  }
+  
+  function submitToLeaderboard() {
+    dailyLeaderboard.push({ name: playerName, score: score, date: new Date().toDateString() });
+    dailyLeaderboard.sort((a,b) => b.score - a.score);
+    dailyLeaderboard = dailyLeaderboard.slice(0, 10);
+    localStorage.setItem('voiceLeaderboard', JSON.stringify(dailyLeaderboard));
+    updateLeaderboardDisplay();
+  }
+  
+  function logAnswer(wasCorrect, responseTime) {
+    if (!currentQuestion) return;
+    analytics.totalAnswers++;
+    if (wasCorrect) analytics.correctAnswers++;
+    analytics.byType[currentQuestion.type].total++;
+    if (wasCorrect) analytics.byType[currentQuestion.type].correct++;
+    if (responseTime) analytics.responseTimes.push(responseTime);
+    if (!wasCorrect) analytics.missedQuestions.push(currentQuestion.sentence);
+    localStorage.setItem('voiceDefenderAnalytics', JSON.stringify(analytics));
+  }
+  
+  function processAnswer(isTimeout = false) {
+    if (!gameActive) { showFeedback("Game over! Click 'New Game' to play again!", false); return; }
+    if (timerInterval) clearInterval(timerInterval);
     
-    addFloatingText('💔 DAMAGE!', width/2, 150, '#ef4444');
-    document.querySelector('.game-container').style.animation = 'shake 0.4s ease';
-    setTimeout(() => {
-      document.querySelector('.game-container').style.animation = '';
-    }, 400);
+    const startAns = Date.now();
+    const userAnswer = isTimeout ? '' : document.getElementById('answerInput').value;
+    if (!userAnswer.trim() && !isTimeout) { showFeedback("Type an answer first!", false); loadNewQuestion(); return; }
     
-    if (health <= 0) {
-      gameRunning = false;
-      addFloatingText('GAME OVER', width/2, height/2, '#ff4757');
-      setTimeout(() => {
-        alert(`GAME OVER!\nFinal Score: ${Math.floor(score)}\nClick OK to try again!`);
-        resetGame();
-      }, 800);
-    }
-  }
-  
-  function resetGame() {
-    score = 0;
-    combo = 0;
-    health = 3;
-    gameRunning = true;
-    fallingItems = [];
-    particles = [];
-    floatingTexts = [];
-    slowActive = false;
-    doublePoints = false;
-    shieldActive = false;
-    slowUses = 3;
-    doubleUses = 3;
-    shieldUses = 3;
-    spawnDelay = 60;
-    updateUI();
-    updatePowerupButtons();
-    document.getElementById('answerInput').value = '';
-    document.getElementById('answerInput').focus();
-  }
-  
-  function updatePowerupButtons() {
-    document.getElementById('powerSlow').innerHTML = `🐢 Slow Fall (${slowUses})`;
-    document.getElementById('powerDouble').innerHTML = `✨ 2x Points (${doubleUses})`;
-    document.getElementById('powerShield').innerHTML = `🛡️ Shield (${shieldUses})`;
+    const responseTime = (Date.now() - startAns) / 1000;
+    const normalizedUser = isTimeout ? '' : normalize(userAnswer);
+    const normalizedCorrect = normalize(currentQuestion.answer);
+    const wasCorrect = !isTimeout && normalizedUser === normalizedCorrect;
     
-    if (slowUses <= 0) document.getElementById('powerSlow').classList.add('disabled');
-    else document.getElementById('powerSlow').classList.remove('disabled');
+    logAnswer(wasCorrect, responseTime);
     
-    if (doubleUses <= 0) document.getElementById('powerDouble').classList.add('disabled');
-    else document.getElementById('powerDouble').classList.remove('disabled');
-    
-    if (shieldUses <= 0) document.getElementById('powerShield').classList.add('disabled');
-    else document.getElementById('powerShield').classList.remove('disabled');
-  }
-  
-  // Powerup handlers
-  document.getElementById('powerSlow').addEventListener('click', () => {
-    if (slowUses > 0 && !slowActive) {
-      slowUses--;
-      slowActive = true;
-      for (let item of fallingItems) {
-        item.speed = 0.5;
-      }
-      setTimeout(() => {
-        slowActive = false;
-        for (let item of fallingItems) {
-          item.speed = 0.85;
-        }
-      }, 8000);
-      updatePowerupButtons();
-      addFloatingText('🐢 SLOW FALL ACTIVE!', width/2, 80, '#60a5fa');
-    }
-  });
-  
-  document.getElementById('powerDouble').addEventListener('click', () => {
-    if (doubleUses > 0 && !doublePoints) {
-      doubleUses--;
-      doublePoints = true;
-      setTimeout(() => {
-        doublePoints = false;
-      }, 10000);
-      updatePowerupButtons();
-      addFloatingText('✨ 2X POINTS ACTIVE!', width/2, 80, '#fbbf24');
-    }
-  });
-  
-  document.getElementById('powerShield').addEventListener('click', () => {
-    if (shieldUses > 0 && !shieldActive) {
-      shieldUses--;
-      shieldActive = true;
-      setTimeout(() => {
-        shieldActive = false;
-      }, 8000);
-      updatePowerupButtons();
-      addFloatingText('🛡️ SHIELD ACTIVE!', width/2, 80, '#34d399');
-    }
-  });
-  
-  document.getElementById('powerReset').addEventListener('click', () => {
-    resetGame();
-  });
-  
-  document.getElementById('submitBtn').addEventListener('click', checkAndDefend);
-  document.getElementById('answerInput').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') checkAndDefend();
-  });
-  
-  // ============ DRAWING (BIGGER TEXT) ============
-  function drawBackground() {
-    const grad = ctx.createLinearGradient(0, 0, 0, height);
-    grad.addColorStop(0, '#0f0c29');
-    grad.addColorStop(1, '#24243e');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, width, height);
-    
-    // Draw grid lines
-    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
-    ctx.lineWidth = 1;
-    for (let i = 0; i < height; i += 40) {
-      ctx.beginPath();
-      ctx.moveTo(0, i);
-      ctx.lineTo(width, i);
-      ctx.stroke();
+    if (wasCorrect) {
+      let pointsEarned = 100;
+      if (doublePointsActive && doublePointsRemaining > 0) { pointsEarned *= 2; doublePointsRemaining--; showFeedback(`DOUBLE POINTS! +${pointsEarned}`, true); if (doublePointsRemaining === 0) { doublePointsActive = false; showFeedback("2x Points boost ended!", true); } }
+      else { showFeedback(`Correct! +${pointsEarned} points`, true); }
+      streak++; wrongCount = 0;
+      if (streak >= 3 && streak % 3 === 0) { const bonus = 50; pointsEarned += bonus; showFeedback(`🔥 ${streak} in a row! +${bonus} STREAK BONUS! 🔥`, true); }
+      score += pointsEarned; updateUI(); adjustDifficulty(); loadNewQuestion();
+    } else {
+      wrongCount++; streak = 0; health--; updateUI();
+      showFeedback(isTimeout ? `Time's up! Correct: "${currentQuestion.answer}". You lost 1 life!` : `Wrong! Correct: "${currentQuestion.answer}". You lost 1 life!`, false);
+      if (health <= 0) { gameActive = false; showFeedback("💀 GAME OVER! Click 'New Game' to try again! 💀", false); document.getElementById('enemyBadge').innerHTML = '💀 GAME OVER 💀'; document.getElementById('enemyBadge').style.background = '#333'; submitToLeaderboard(); }
+      else { adjustDifficulty(); loadNewQuestion(); }
     }
   }
   
-  function drawFallingItems() {
-    for (let item of fallingItems) {
-      // Glow effect
-      ctx.shadowBlur = 12;
-      ctx.shadowColor = '#ff6b6b';
-      
-      // Background
-      const grad = ctx.createLinearGradient(item.x, item.y, item.x, item.y + item.height);
-      grad.addColorStop(0, 'rgba(255,107,107,0.25)');
-      grad.addColorStop(1, 'rgba(255,71,87,0.2)');
-      ctx.fillStyle = grad;
-      ctx.fillRect(item.x, item.y, item.width, item.height);
-      
-      // Border
-      ctx.strokeStyle = '#ff6b6b';
-      ctx.lineWidth = 2.5;
-      ctx.strokeRect(item.x, item.y, item.width, item.height);
-      
-      // Type badge (BIGGER)
-      ctx.fillStyle = item.type === 'identify' ? '#60a5fa' : '#fbbf24';
-      ctx.font = 'bold 13px "Poppins", monospace';
-      ctx.fillText(item.type === 'identify' ? '🔍 IDENTIFY' : '✍️ TRANSFORM', item.x + 10, item.y + 22);
-      
-      // Sentence text (BIGGER)
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 14px "Poppins", monospace';
-      let displayText = item.sentence.length > 38 ? item.sentence.slice(0, 35) + '...' : item.sentence;
-      ctx.fillText(displayText, item.x + 10, item.y + 48);
-      
-      // Hint text (smaller but readable)
-      ctx.fillStyle = '#a0a0a0';
-      ctx.font = '10px monospace';
-      let hintText = item.displayHint.length > 40 ? item.displayHint.slice(0, 37) + '...' : item.displayHint;
-      ctx.fillText(hintText, item.x + 10, item.y + 68);
-      
-      // Danger indicator
-      const dangerLevel = Math.min(1, (height - item.y) / height);
-      if (dangerLevel > 0.7) {
-        ctx.fillStyle = `rgba(255,71,87,${dangerLevel * 0.4})`;
-        ctx.fillRect(item.x, item.y, item.width, item.height);
-      }
-      
-      ctx.shadowBlur = 0;
-    }
+  // ============ POWER-UPS ============
+  function useHint() { if (!gameActive) return; if (hintUses <= 0) { showFeedback("No hints left!", false); return; } hintUses--; document.getElementById('powerHint').innerHTML = `💡 Hint (${hintUses})`; showFeedback(`💡 HINT: ${currentQuestion.hint}`, true); if (hintUses === 0) document.getElementById('powerHint').classList.add('disabled'); speakText(currentQuestion.hint); }
+  function useSkip() { if (!gameActive) return; if (skipUses <= 0) { showFeedback("No skips left!", false); return; } skipUses--; document.getElementById('powerSkip').innerHTML = `⏩ Skip (${skipUses})`; showFeedback("⏩ Enemy skipped! No penalty.", true); if (skipUses === 0) document.getElementById('powerSkip').classList.add('disabled'); loadNewQuestion(); }
+  function useDoublePoints() { if (!gameActive) return; if (doublePointsUses <= 0) { showFeedback("No 2x points left!", false); return; } if (doublePointsActive) { showFeedback("2x points already active!", false); return; } doublePointsUses--; doublePointsActive = true; doublePointsRemaining = 3; document.getElementById('powerDouble').innerHTML = `✨ 2x Points (${doublePointsUses})`; showFeedback("✨ 2X POINTS ACTIVE for the next 3 questions! ✨", true); if (doublePointsUses === 0) document.getElementById('powerDouble').classList.add('disabled'); }
+  function resetGame() { score = 0; streak = 0; wrongCount = 0; health = 5; currentTier = 0; gameActive = true; doublePointsActive = false; doublePointsRemaining = 0; doublePointsUses = 3; hintUses = 3; skipUses = 3; document.getElementById('powerHint').innerHTML = `💡 Hint (3)`; document.getElementById('powerSkip').innerHTML = `⏩ Skip (3)`; document.getElementById('powerDouble').innerHTML = `✨ 2x Points (3)`; document.getElementById('powerHint').classList.remove('disabled'); document.getElementById('powerSkip').classList.remove('disabled'); document.getElementById('powerDouble').classList.remove('disabled'); document.getElementById('enemyBadge').innerHTML = '⚔️ ENEMY APPROACHING ⚔️'; document.getElementById('enemyBadge').style.background = '#002D62'; updateUI(); updateTierDisplay(); filterQuestionsByTier(); showFeedback("✨ Game reset! New enemy approaching! ✨", true); loadNewQuestion(); }
+  
+  // ============ TEACHER PANEL ============
+  function exportReport() {
+    let accuracy = ((analytics.correctAnswers / analytics.totalAnswers) * 100).toFixed(1);
+    let report = { 
+      school: "Academia Europea",
+      accuracy: accuracy + '%', 
+      totalQuestions: analytics.totalAnswers, 
+      avgResponseTime: analytics.responseTimes.length ? (analytics.responseTimes.reduce((a,b)=>a+b,0)/analytics.responseTimes.length).toFixed(1) + 's' : 'N/A',
+      weakAreas: [], 
+      tierProgression: analytics.tierHistory 
+    };
+    if (analytics.byType.identify.total > 0 && analytics.byType.identify.correct/analytics.byType.identify.total < 0.6) report.weakAreas.push('Identify voice');
+    if (analytics.byType.transform.total > 0 && analytics.byType.transform.correct/analytics.byType.transform.total < 0.6) report.weakAreas.push('Transform to passive');
+    console.table(report);
+    alert('📊 ACADEMIA EUROPEA REPORT\n\nAccuracy: ' + report.accuracy + '\nWeak areas: ' + (report.weakAreas.join(', ') || 'None') + '\n\nFull report saved to console & localStorage');
+    localStorage.setItem('academiaReport', JSON.stringify(report));
   }
   
-  function drawParticles() {
-    for (let i = 0; i < particles.length; i++) {
-      const p = particles[i];
-      ctx.fillStyle = p.color;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, 5 * p.life, 0, Math.PI * 2);
-      ctx.fill();
-      p.x += p.vx;
-      p.y += p.vy;
-      p.life -= 0.03;
-      if (p.life <= 0) {
-        particles.splice(i, 1);
-        i--;
-      }
-    }
-  }
+  function saveTeacherSettings() { teacherMaxDiff = parseInt(document.getElementById('teacherMaxDiff').value); teacherTimeLimit = parseInt(document.getElementById('teacherTimeLimit').value); let classCode = document.getElementById('teacherClassCode').value; if (classCode) localStorage.setItem(`class_${classCode}`, JSON.stringify({ maxDiff: teacherMaxDiff, timeLimit: teacherTimeLimit })); showFeedback("Settings saved for Academia Europea class!", true); filterQuestionsByTier(); }
   
-  function drawFloatingTexts() {
-    for (let i = 0; i < floatingTexts.length; i++) {
-      const t = floatingTexts[i];
-      ctx.font = 'bold 22px monospace';
-      ctx.fillStyle = t.color;
-      ctx.shadowBlur = 8;
-      ctx.fillText(t.text, t.x - 35, t.y - t.life * 50);
-      t.life -= 0.02;
-      if (t.life <= 0) {
-        floatingTexts.splice(i, 1);
-        i--;
-      }
-    }
-    ctx.shadowBlur = 0;
-  }
+  // ============ MODALS ============
+  const modals = { instructions: document.getElementById('instructionsModal'), teacher: document.getElementById('teacherModal'), accessibility: document.getElementById('accessibilityModal') };
+  function closeAllModals() { Object.values(modals).forEach(m => m.classList.remove('active')); }
+  document.getElementById('showInstructions').addEventListener('click', () => modals.instructions.classList.add('active'));
+  document.getElementById('closeModalBtn').addEventListener('click', closeAllModals);
+  document.getElementById('teacherPanelBtn').addEventListener('click', () => modals.teacher.classList.add('active'));
+  document.getElementById('closeTeacherBtn').addEventListener('click', closeAllModals);
+  document.getElementById('saveSettingsBtn').addEventListener('click', saveTeacherSettings);
+  document.getElementById('exportClassReport').addEventListener('click', exportReport);
+  document.getElementById('powerAccessibility').addEventListener('click', () => modals.accessibility.classList.add('active'));
+  document.getElementById('closeAccessibilityBtn').addEventListener('click', () => { localStorage.setItem('accessibility', JSON.stringify(accessibility)); applyAccessibility(); closeAllModals(); });
+  document.getElementById('highContrastToggle').addEventListener('change', (e) => accessibility.highContrast = e.target.checked);
+  document.getElementById('dyslexicFontToggle').addEventListener('change', (e) => accessibility.dyslexicFont = e.target.checked);
+  document.getElementById('largeTextToggle').addEventListener('change', (e) => accessibility.largeText = e.target.checked);
+  document.getElementById('textToSpeechToggle').addEventListener('change', (e) => accessibility.textToSpeech = e.target.checked);
+  document.getElementById('showLeaderboard').addEventListener('click', () => { let lb = document.getElementById('leaderboardContainer'); lb.style.display = lb.style.display === 'none' ? 'block' : 'none'; updateLeaderboardDisplay(); });
+  document.getElementById('powerReset').addEventListener('click', resetGame);
+  document.getElementById('powerHint').addEventListener('click', useHint);
+  document.getElementById('powerSkip').addEventListener('click', useSkip);
+  document.getElementById('powerDouble').addEventListener('click', useDoublePoints);
+  document.getElementById('submitBtn').addEventListener('click', () => processAnswer(false));
+  document.getElementById('answerInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') processAnswer(false); });
+  document.getElementById('sentenceBox').addEventListener('click', () => { if (currentQuestion) speakText(currentQuestion.sentence); });
+  modals.instructions.addEventListener('click', (e) => { if (e.target === modals.instructions) closeAllModals(); });
+  modals.teacher.addEventListener('click', (e) => { if (e.target === modals.teacher) closeAllModals(); });
+  modals.accessibility.addEventListener('click', (e) => { if (e.target === modals.accessibility) closeAllModals(); });
   
-  function drawUIOverlay() {
-    ctx.fillStyle = 'rgba(255,255,255,0.25)';
-    ctx.font = '11px monospace';
-    ctx.fillText('💡 Type answer → Press ENTER or click DEFEND', width/2 - 180, height - 12);
-  }
-  
-  // ============ UPDATE LOGIC ============
-  function updateGame() {
-    if (!gameRunning) return;
-    
-    // Spawn items (slower)
-    spawnCounter++;
-    if (spawnCounter >= spawnDelay && fallingItems.length < 6) {
-      spawnCounter = 0;
-      spawnFallingItem();
-      // Gradually increase difficulty (but keep reasonable)
-      if (score > 3000) spawnDelay = 45;
-      else if (score > 2000) spawnDelay = 50;
-      else if (score > 1000) spawnDelay = 55;
-      else if (score > 500) spawnDelay = 58;
-    }
-    
-    // Update falling items
-    for (let i = 0; i < fallingItems.length; i++) {
-      const item = fallingItems[i];
-      item.y += item.speed;
-      
-      // Check if reached bottom
-      if (item.y + item.height >= height - 40) {
-        fallingItems.splice(i, 1);
-        takeDamage();
-        i--;
-      }
-    }
-  }
-  
-  function animate() {
-    updateGame();
-    
-    drawBackground();
-    drawFallingItems();
-    drawParticles();
-    drawFloatingTexts();
-    drawUIOverlay();
-    
-    requestAnimationFrame(animate);
-  }
+  document.addEventListener('keypress', (e) => { if (e.key === 't' || e.key === 'T') modals.teacher.classList.add('active'); });
   
   // Initialize
+  applyAccessibility();
   updateUI();
-  updatePowerupButtons();
-  document.getElementById('answerInput').focus();
-  animate();
-  
-  // Focus management
-  canvas.addEventListener('click', () => {
-    document.getElementById('answerInput').focus();
-  });
+  updateTierDisplay();
+  filterQuestionsByTier();
+  loadNewQuestion();
+  document.getElementById('highScoreValue').innerText = highScore;
 </script>
 </body>
 </html>
